@@ -7,14 +7,26 @@ const tintColorLight = "#0a7ea4";
 const tintColorDark = "#fff";
 
 export const Colors = {
-  primary: "#79417E", // Deep purple
-  primaryDark: "#6A2C70", // Stronger purple for accents
-  background: "#F2EDF2", // Light background
-  accent: "#B698B9", // Soft purple for buttons & highlights
-  secondaryBackground: "#D2BFD3", // Alternate background or cards
-  textPrimary: "#1E1E1E", // Dark text
-  textSecondary: "#5A5A5A", // Muted text
-  white: "#FEFEFE",
+  light: {
+    primary: "#79417E", // Deep purple
+    primaryDark: "#6A2C70", // Stronger purple for accents
+    background: "#F2EDF2", // Light background
+    accent: "#B698B9", // Soft purple for buttons & highlights
+    secondaryBackground: "#D2BFD3", // Alternate background or cards
+    textPrimary: "#1E1E1E", // Dark text
+    textSecondary: "#5A5A5A", // Muted text
+    white: "#FEFEFE",
+  },
+  dark: {
+    primary: "#79417E", // Same purple can be reused
+    primaryDark: "#6A2C70",
+    background: "#1E1E1E", // Dark background
+    accent: "#B698B9", // Soft purple highlight
+    secondaryBackground: "#2C2C2C", // Darker card background
+    textPrimary: "#F2EDF2", // Light text
+    textSecondary: "#B0B0B0", // Muted light text
+    white: "#FEFEFE",
+  },
 };
 
 export const theme = {

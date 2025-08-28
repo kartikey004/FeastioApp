@@ -2,14 +2,17 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "jsx": "react-jsx",                     // Fix JSX error
+    "esModuleInterop": true,               // Fix default import issues
+    "allowSyntheticDefaultImports": true,  // Fix default import issues
+    "skipLibCheck": true,                  // Optional, speeds up TS compile
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
-, "backend/src/server.js"  ]
+    "**/*.tsx",
+    "backend/src/server.js"
+  ]
 }

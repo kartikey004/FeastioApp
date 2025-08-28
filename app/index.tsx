@@ -7,7 +7,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to GeoNudge</Text>
-      <Button title="Get Started" onPress={() => router.push("/login")} />
+      <Button title="Get Started" onPress={() => router.push("/loginScreen")} />
     </View>
   );
 }

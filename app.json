@@ -5,13 +5,16 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "geonudgeapplication",
+    "scheme": "geonudge",
+    "owner": "kartikey004",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.kartikey004.geonudge",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.kartikey004.geonudge",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

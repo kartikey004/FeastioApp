@@ -1,5 +1,7 @@
+import { Day, MealType } from "@/utils/types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api/api";
+import { TodayMealPlanResponse } from "../slices/mealPlanSlice";
 
 export interface NutritionalSummary {
   calories: number;
@@ -10,8 +12,8 @@ export interface NutritionalSummary {
 
 export interface MealEntry {
   mealType: string; // breakfast, lunch, dinner, snack
-  recipeTitle: string; // e.g., "Grilled Chicken Salad"
-  recipeDescription: string; // description/ingredients
+  title: string; // e.g., "Grilled Chicken Salad"
+  description: string; // description/ingredients
 }
 
 export interface MealPlan {
@@ -21,6 +23,23 @@ export interface MealPlan {
   plan: Record<string, MealEntry[]>; // key = day (Mon, Tue...), value = meals
   totalNutritionalSummary?: NutritionalSummary;
   createdAt?: string;
+}
+
+export interface MealPlanResponse {
+  message: string;
+  totalSummary: string;
+  plan: MealPlan;
+}
+
+interface UpdateMealPlanArgs {
+  day: Day;
+  newMeal: {
+    mealType: MealType;
+    recipeSnapshot: {
+      title: string;
+      description: string;
+    };
+  };
 }
 
 export const fetchMealPlans = createAsyncThunk<MealPlan[]>(
@@ -45,21 +64,38 @@ export const fetchMealPlans = createAsyncThunk<MealPlan[]>(
   }
 );
 
-export const createMealPlan = createAsyncThunk<
-  MealPlan,
-  { creatorId: string; name: string; plan: Record<string, MealEntry[]> }
->("mealPlans/createMealPlan", async (data, { rejectWithValue }) => {
+export const updateMealPlan = createAsyncThunk<
+  void,
+  UpdateMealPlanArgs,
+  { rejectValue: string }
+>("mealPlans/updateMealPlan", async (updates, { rejectWithValue }) => {
   try {
-    console.log("Creating new meal plan:", data);
-    const res = await api.post("/mealplans", data);
-    console.log("Meal plan created:", res.data);
-    return res.data.data as MealPlan;
+    const payload = {
+      day: updates.day,
+      newMeal: {
+        mealType: updates.newMeal.mealType,
+        recipeSnapshot: {
+          title: updates.newMeal.recipeSnapshot.title,
+          description: updates.newMeal.recipeSnapshot.description,
+        },
+      },
+    };
+
+    console.log("Updating meal plan with payload:", payload);
+
+    const res = await api.patch("/mealplans/update", payload);
+
+    console.log("Meal plan updated:", res.data);
+    // const data: MealPlanResponse = res.data;
+    // return data.plan;
   } catch (err: any) {
     console.error(
-      "Error creating meal plan:",
+      "Error updating meal plan:",
       err.response?.data || err.message
     );
-    return rejectWithValue(err.response?.data?.message || "Failed to create");
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to update meal plan."
+    );
   }
 });
 
@@ -98,5 +134,23 @@ export const generateMealPlan = createAsyncThunk<
       error.response?.data || error.message
     );
     return rejectWithValue(error.response?.data?.error || error.message);
+  }
+});
+
+export const getTodayMealPlanThunk = createAsyncThunk<
+  TodayMealPlanResponse, // ✅ return type
+  void,
+  { rejectValue: string }
+>("mealPlan/getTodayMealPlan", async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.get("/mealPlans/getToday");
+
+    return response.data as TodayMealPlanResponse;
+  } catch (error: any) {
+    console.error("Error fetching today's meal plan:", error);
+
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to fetch today's meal plan"
+    );
   }
 });

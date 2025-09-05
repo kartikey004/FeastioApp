@@ -1,4 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { COLORS } from "@/utils/stylesheet";
 import { Ionicons } from "@expo/vector-icons";
 import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
@@ -6,10 +7,13 @@ import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -30,35 +34,65 @@ export default function LoginScreen() {
   ) => string;
   const redirectUri = makeRedirect({ useProxy: true });
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: Constants.expoConfig?.extra?.googleWebClientId,
+    clientId: Constants.expoConfig?.extra?.googleExpoClientId,
+    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
+    webClientId: Constants.expoConfig?.extra?.googleWebClientId,
     redirectUri,
     scopes: ["profile", "email"],
-  });
+  } as any);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/(tabs)/homeScreen");
+    }
+  }, [user, router]);
 
   useEffect(() => {
     if (response?.type === "success") {
       const accessToken = response.authentication?.accessToken;
-
       if (accessToken) {
         dispatch(googleSignIn(accessToken));
       }
+    } else if (response?.type === "error") {
+      console.log("Google Sign-In error:", response.error);
     }
   }, [response, dispatch]);
 
-  useEffect(() => {
-    if (user) {
-      router.replace("/personalizationScreen");
-    }
-  }, [user, router]);
-
   const handleLogin = () => {
+    let hasError = false;
+
+    if (!email) {
+      setEmailError("Email is required");
+      hasError = true;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("Enter a valid email");
+      hasError = true;
+    } else {
+      setEmailError("");
+    }
+
+    if (!password) {
+      setPasswordError("Password is required");
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      hasError = true;
+    } else {
+      setPasswordError("");
+    }
+
+    if (hasError) return;
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then(() => {
-        router.replace("/personalizationScreen");
+        router.replace("/(tabs)/homeScreen");
       })
       .catch((err) => {
         console.log("Login failed:", err);
@@ -74,89 +108,122 @@ export default function LoginScreen() {
     console.log("Facebook Sign-In pressed");
     //todo: Implement Facebook Sign-In
   };
-  const theme = Colors.light;
+
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   return (
-    <LinearGradient
-      colors={[theme.white, theme.white]}
-      style={styles.container}
-    >
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../assets/images/geoNudgeLogo.png")}
-          style={styles.logo}
-          resizeMode="cover"
-        />
-        <Text style={styles.title}>Welcome to GeoNudge</Text>
-        <Text style={styles.subtitle}>Sign in to continue your journey</Text>
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={theme.accent}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={theme.accent}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity
-        style={[styles.loginButton, loading && { opacity: 0.7 }]}
-        onPress={handleLogin}
-        disabled={loading}
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS == "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS == "ios" ? 60 : 0}
       >
-        {loading ? (
-          <ActivityIndicator size="small" color={Colors.light.white} />
-        ) : (
-          <Text style={styles.loginButtonTextWhite}>Login</Text>
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.navigationButtonContainer}>
-        <Text style={styles.loginText}>Don't have an account?</Text>
-        <TouchableOpacity
-          style={styles.loginText}
-          onPress={() => router.push("/signupScreen")}
+        <LinearGradient
+          colors={[COLORS.white, COLORS.white]}
+          style={styles.container}
         >
-          <Text style={styles.loginButtonText}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../assets/images/nutrisenseLogo.png")}
+              style={styles.logo}
+              resizeMode="cover"
+            />
+            {/* <Text style={styles.title}>Welcome to GeoNudge</Text> */}
+            <Text style={styles.subtitle}>Eat smarter. Live better.</Text>
+          </View>
 
-      <Text style={styles.orLoginText}>Or Login with</Text>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.googleButton]}
-          onPress={handleGoogleSignIn}
-        >
-          <Ionicons
-            name="logo-google"
-            size={moderateScale(35)}
-            color="#DB4437"
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor={COLORS.textSecondary}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
           />
-        </TouchableOpacity>
+          {emailError ? (
+            <Text style={styles.errorText}>{emailError}</Text>
+          ) : null}
 
-        <TouchableOpacity
-          style={[styles.button, styles.facebookButton]}
-          onPress={handleFacebookSignIn}
-        >
-          <Ionicons
-            name="logo-facebook"
-            size={moderateScale(40)}
-            color="#1877F2"
-          />
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.inputPassword}
+              placeholder="Password"
+              placeholderTextColor={COLORS.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={22}
+                color={COLORS.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {passwordError ? (
+            <Text style={styles.errorText}>{passwordError}</Text>
+          ) : null}
+          <TouchableOpacity
+            style={[styles.loginButton, loading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color={Colors.light.white} />
+            ) : (
+              <Text style={styles.loginButtonTextWhite}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.navigationButtonContainer}>
+            <Text style={styles.loginText}>Don't have an account?</Text>
+            <TouchableOpacity
+              style={styles.loginText}
+              onPress={() => router.replace("/signupScreen")}
+            >
+              <Text style={styles.loginButtonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* <Text style={styles.orLoginText}>OR</Text> */}
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.googleButton]}
+              onPress={handleGoogleSignIn}
+            >
+              <Ionicons
+                name="logo-google"
+                size={moderateScale(35)}
+                color="#DB4437"
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.facebookButton]}
+              onPress={handleFacebookSignIn}
+            >
+              <Ionicons
+                name="logo-facebook"
+                size={moderateScale(40)}
+                color="#1877F2"
+              />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -168,65 +235,94 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: verticalScale(30),
+    // marginBottom: verticalScale(30),
+    marginVertical: verticalScale(15),
   },
   logo: {
-    width: scale(120),
-    height: scale(120),
-    marginBottom: verticalScale(15),
-    borderRadius: scale(60),
+    width: "90%",
+    height: verticalScale(60),
   },
   title: {
     fontSize: moderateScale(28),
     fontWeight: "700",
-    color: Colors.light.primary,
+    color: COLORS.primaryDark,
     textAlign: "center",
   },
   subtitle: {
     fontSize: moderateScale(16),
-    color: Colors.light.accent,
+    color: COLORS.textPrimary,
     textAlign: "center",
+    fontWeight: "500",
     marginTop: verticalScale(5),
   },
   input: {
     height: verticalScale(45),
     borderWidth: 1,
-    borderColor: Colors.light.accent,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: scale(10),
+    borderBottomLeftRadius: scale(10),
+    borderColor: COLORS.primaryDark,
     borderRadius: scale(8),
     paddingHorizontal: scale(12),
     fontSize: moderateScale(14),
-    marginBottom: verticalScale(12),
-    color: Colors.light.primary,
-    backgroundColor: Colors.light.white,
+    marginTop: verticalScale(10),
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.greyLight,
+  },
+  passwordContainer: {
+    height: verticalScale(45),
+    borderWidth: 1,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: scale(10),
+    borderBottomLeftRadius: scale(10),
+    borderColor: COLORS.primaryDark,
+    borderRadius: scale(8),
+    paddingHorizontal: scale(12),
+    fontSize: moderateScale(14),
+    marginTop: verticalScale(10),
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.greyLight,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputPassword: {
+    flex: 1,
+    height: 48,
+    color: COLORS.textPrimary,
+  },
+  eyeIcon: {
+    padding: 5,
   },
   loginButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: COLORS.primaryDark,
     borderRadius: scale(8),
     paddingVertical: verticalScale(12),
     alignItems: "center",
-    marginBottom: verticalScale(10),
+    // marginBottom: verticalScale(10),
+    marginVertical: verticalScale(20),
   },
   loginButtonText: {
-    color: Colors.light.primary,
+    color: COLORS.primaryDark,
     fontSize: moderateScale(14),
     fontWeight: "600",
   },
   loginButtonTextWhite: {
-    color: Colors.light.white,
-    fontSize: moderateScale(14),
+    color: COLORS.white,
+    fontSize: moderateScale(16),
     fontWeight: "600",
   },
   loginText: {
     fontSize: moderateScale(14),
-    color: Colors.light.accent,
+    color: COLORS.textPrimary,
     textAlign: "center",
     // marginTop: verticalScale(1),
-    marginBottom: verticalScale(15),
+    marginBottom: verticalScale(5),
   },
   orLoginText: {
     fontSize: moderateScale(16),
-    color: Colors.light.accent,
+    color: COLORS.primaryDark,
     textAlign: "center",
+    fontWeight: "700",
     marginTop: verticalScale(5),
     // marginBottom: verticalScale(10),
   },
@@ -251,16 +347,21 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     padding: scale(15),
-    // backgroundColor: "#DB4437", // Google Red
   },
   facebookButton: {
     padding: scale(15),
-    // backgroundColor: "#1877F2", // Facebook Blue
   },
   buttonText: {
     color: Colors.light.white,
     fontSize: moderateScale(16),
     marginLeft: scale(10),
     fontWeight: "600",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 1,
+    marginLeft: 10,
+    marginBottom: 10,
   },
 });

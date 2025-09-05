@@ -2,23 +2,57 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "GeoNudge",
-    slug: "geonudge",
-    scheme: "geonudge",
- 
-    android: {
-      package: "com.kartikey004.geonudge"
-    },
+    name: "NutriSenseApplication",
+    slug: "NutriSenseApplication",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/images/icon.png",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    scheme: "nutrisense",
+    owner: "kartikey004",
+    assetBundlePatterns: ["**/*"],
+
     ios: {
-      bundleIdentifier: "com.kartikey004.geonudge"
+      supportsTablet: true,
+      bundleIdentifier: "com.kartikey004.nutrisense",
+      googleServicesFile: "./GoogleService-Info.plist",
     },
+
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/images/icon.png",
+        backgroundColor: "#FFFFFF",
+      },
+      package: "com.kartikey004.nutrisense",
+      googleServicesFile: "./google-services.json",
+      edgeToEdgeEnabled: true,
+    },
+
+    web: {
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/favicon.png",
+    },
+
+    plugins: [
+      "expo-router",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme: `com.googleusercontent.apps.${process.env.GOOGLE_IOS_CLIENT_ID}`,
+        },
+      ],
+    ],
+
+    experiments: {
+      typedRoutes: true,
+    },
+
     extra: {
+      googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
       googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
       googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
-      googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
-      eas: {
-        projectId: "67109d05-efb9-4525-8e84-3b6915858c04",
-      },
     },
   },
 };

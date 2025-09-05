@@ -129,10 +129,10 @@ const DropdownModal: React.FC<DropdownModalProps> = React.memo(
                         >
                           {item}
                         </Text>
-                        {(isMultiSelect && selectedValues?.includes(item)) ||
+                        {/* {(isMultiSelect && selectedValues?.includes(item)) ||
                         (!isMultiSelect && selectedValue === item) ? (
                           <Text style={styles.checkmarkSimple}>✓</Text>
-                        ) : null}
+                        ) : null} */}
                       </TouchableOpacity>
                     )}
                     showsVerticalScrollIndicator={false}
@@ -259,7 +259,7 @@ const PersonalizationScreen = () => {
           allergies: selectedAllergies,
           healthGoals: selectedGoals,
           cuisinePreferences: selectedCuisines,
-          name: "My Personalized Meal Plan",
+          name: "Personal Menu",
         })
       ).unwrap();
       console.log("✅ Meal plan generated:", mealPlan);
@@ -364,17 +364,20 @@ const PersonalizationScreen = () => {
       loading,
     ]
   );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Fixed Header Section */}
-
       <View style={styles.headerSection}>
         <Image source={logoImage} style={styles.logoImage} />
-        <Text style={styles.title}>Let's personalize your meal plan</Text>
-        <Text style={styles.subtitle}>
-          Tell us about your preferences so we can create the perfect plan for
-          you
-        </Text>
+
+        <View style={styles.titleContainer}>
+          {/* <Text style={styles.title}>Let's personalize your meal plan</Text> */}
+          <Text style={styles.subtitle}>
+            Tell us about your preferences so we can create the perfect meal
+            plan for you
+          </Text>
+        </View>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressHeader}>
@@ -386,7 +389,7 @@ const PersonalizationScreen = () => {
             </Text>
           </View>
           <View style={styles.progressBarBackground}>
-            <View
+            <Animated.View
               style={[
                 styles.progressBarFill,
                 { width: `${(answered / 4) * 100}%` },
@@ -402,179 +405,197 @@ const PersonalizationScreen = () => {
         contentContainerStyle={styles.questionsScrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          onPress={() => openModal(setDietModalVisible)}
-          style={[
-            styles.questionCard,
-            selectedDiet && styles.questionCardSelected,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Select dietary restrictions"
-        >
-          <View style={styles.questionIconContainer}>
-            <View
-              style={[styles.questionIcon, { backgroundColor: COLORS.accent }]}
-            >
-              <Text style={styles.questionEmoji}>🥗</Text>
+        <View style={styles.questionsContainer}>
+          <TouchableOpacity
+            onPress={() => openModal(setDietModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedDiet && styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select dietary restrictions"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionIconContainer}>
+                {/* <View */}
+                {/* style={[styles.questionIcon, { backgroundColor: "#E8F5E8" }]} */}
+                {/* > */}
+                {/* <Text style={styles.questionEmoji}>🥗</Text> */}
+                {/* </View> */}
+              </View>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Dietary Preferences</Text>
+                <Text style={styles.questionSubtitle}>
+                  Do you follow any specific diet?
+                </Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Image
+                  source={dietModalVisible ? upButton : downButton}
+                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
+                />
+              </View>
             </View>
-          </View>
-          <View style={styles.questionContent}>
-            <Text style={styles.questionTitle}>Dietary Preferences</Text>
-            <Text style={styles.questionSubtitle}>
-              Do you follow any specific diet?
-            </Text>
             {selectedDiet && (
-              <View style={styles.selectedBadge}>
-                <Text style={styles.selectedBadgeText}>{selectedDiet}</Text>
+              <View style={styles.selectedSection}>
+                <View style={styles.selectedBadge}>
+                  <Text style={styles.selectedBadgeText}>{selectedDiet}</Text>
+                </View>
               </View>
             )}
-          </View>
-          <View style={styles.arrowContainer}>
-            <Image
-              source={dietModalVisible ? upButton : downButton}
-              style={[styles.arrowIcon, { tintColor: COLORS.primary }]}
-            />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => openModal(setAllergyModalVisible)}
-          style={[
-            styles.questionCard,
-            selectedAllergies.length > 0 && styles.questionCardSelected,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Select food allergies"
-        >
-          <View style={styles.questionIconContainer}>
-            <View
-              style={[
-                styles.questionIcon,
-                { backgroundColor: COLORS.sageLight },
-              ]}
-            >
-              <Text style={styles.questionEmoji}>⚠️</Text>
+          <TouchableOpacity
+            onPress={() => openModal(setAllergyModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedAllergies.length > 0 && styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select food allergies"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionIconContainer}>
+                {/* <View
+                  style={[styles.questionIcon, { backgroundColor: "#FFF3E0" }]}
+                >
+                  <Text style={styles.questionEmoji}>⚠️</Text>
+                </View> */}
+              </View>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Food Allergies</Text>
+                <Text style={styles.questionSubtitle}>
+                  Any ingredients to avoid?
+                </Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Image
+                  source={allergyModalVisible ? upButton : downButton}
+                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
+                />
+              </View>
             </View>
-          </View>
-          <View style={styles.questionContent}>
-            <Text style={styles.questionTitle}>Food Allergies</Text>
-            <Text style={styles.questionSubtitle}>
-              Any ingredients to avoid?
-            </Text>
             {selectedAllergies.length > 0 && (
-              <View style={styles.selectedContainer}>
-                {selectedAllergies.map((allergy, index) => (
-                  <View key={index} style={styles.selectedChip}>
-                    <Text style={styles.selectedChipText}>{allergy}</Text>
-                  </View>
-                ))}
+              <View style={styles.selectedSection}>
+                <View style={styles.selectedContainer}>
+                  {selectedAllergies.map((allergy, index) => (
+                    <View key={index} style={styles.selectedChip}>
+                      <Text style={styles.selectedChipText}>{allergy}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
-          </View>
-          <View style={styles.arrowContainer}>
-            <Image
-              source={allergyModalVisible ? upButton : downButton}
-              style={[styles.arrowIcon, { tintColor: COLORS.primary }]}
-            />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => openModal(setGoalsModalVisible)}
-          style={[
-            styles.questionCard,
-            selectedGoals.length > 0 && styles.questionCardSelected,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Select health and fitness goals"
-        >
-          <View style={styles.questionIconContainer}>
-            <View
-              style={[styles.questionIcon, { backgroundColor: COLORS.accent }]}
-            >
-              <Text style={styles.questionEmoji}>🎯</Text>
+          <TouchableOpacity
+            onPress={() => openModal(setGoalsModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedGoals.length > 0 && styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select health and fitness goals"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionIconContainer}>
+                {/* <View
+                  style={[styles.questionIcon, { backgroundColor: "#F3E5F5" }]}
+                >
+                  <Text style={styles.questionEmoji}>🎯</Text>
+                </View> */}
+              </View>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Health Goals</Text>
+                <Text style={styles.questionSubtitle}>
+                  What are you working towards?
+                </Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Image
+                  source={goalsModalVisible ? upButton : downButton}
+                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
+                />
+              </View>
             </View>
-          </View>
-          <View style={styles.questionContent}>
-            <Text style={styles.questionTitle}>Health Goals</Text>
-            <Text style={styles.questionSubtitle}>
-              What are you working towards?
-            </Text>
             {selectedGoals.length > 0 && (
-              <View style={styles.selectedContainer}>
-                {selectedGoals.map((goal, index) => (
-                  <View key={index} style={styles.selectedChip}>
-                    <Text style={styles.selectedChipText}>{goal}</Text>
-                  </View>
-                ))}
+              <View style={styles.selectedSection}>
+                <View style={styles.selectedContainer}>
+                  {selectedGoals.map((goal, index) => (
+                    <View key={index} style={styles.selectedChip}>
+                      <Text style={styles.selectedChipText}>{goal}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
-          </View>
-          <View style={styles.arrowContainer}>
-            <Image
-              source={goalsModalVisible ? upButton : downButton}
-              style={[styles.arrowIcon, { tintColor: COLORS.primary }]}
-            />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => openModal(setCuisineModalVisible)}
-          style={[
-            styles.questionCard,
-            selectedCuisines.length > 0 && styles.questionCardSelected,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel="Select cuisine preferences"
-        >
-          <View style={styles.questionIconContainer}>
-            <View
-              style={[
-                styles.questionIcon,
-                { backgroundColor: COLORS.sageLight },
-              ]}
-            >
-              <Text style={styles.questionEmoji}>🌍</Text>
+          <TouchableOpacity
+            onPress={() => openModal(setCuisineModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedCuisines.length > 0 && styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select cuisine preferences"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionIconContainer}>
+                {/* <View
+                  style={[
+                    styles.questionIcon,
+                    { backgroundColor: COLORS.greyMint },
+                  ]}
+                >
+                  <Text style={styles.questionEmoji}>🌍</Text>
+                </View> */}
+              </View>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Favorite Cuisines</Text>
+                <Text style={styles.questionSubtitle}>
+                  What flavors do you love?
+                </Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Image
+                  source={cuisineModalVisible ? upButton : downButton}
+                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
+                />
+              </View>
             </View>
-          </View>
-          <View style={styles.questionContent}>
-            <Text style={styles.questionTitle}>Favorite Cuisines</Text>
-            <Text style={styles.questionSubtitle}>
-              What flavors do you love?
-            </Text>
             {selectedCuisines.length > 0 && (
-              <View style={styles.selectedContainer}>
-                {selectedCuisines.map((cuisine, index) => (
-                  <View key={index} style={styles.selectedChip}>
-                    <Text style={styles.selectedChipText}>{cuisine}</Text>
-                  </View>
-                ))}
+              <View style={styles.selectedSection}>
+                <View style={styles.selectedContainer}>
+                  {selectedCuisines.map((cuisine, index) => (
+                    <View key={index} style={styles.selectedChip}>
+                      <Text style={styles.selectedChipText}>{cuisine}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
-          </View>
-          <View style={styles.arrowContainer}>
-            <Image
-              source={cuisineModalVisible ? upButton : downButton}
-              style={[styles.arrowIcon, { tintColor: COLORS.primary }]}
-            />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             onPress={handlePersonalization}
             style={[
               styles.generateButton,
-              isButtonDisabled && styles.generateButtonDisabled,
+              // isButtonDisabled && styles.generateButtonDisabled,
             ]}
-            disabled={isButtonDisabled}
-            accessibilityRole="button"
+            // disabled={isButtonDisabled}
+            // accessibilityRole="button"
             accessibilityLabel="Generate meal plan"
           >
-            <Text style={styles.generateButtonText}>
-              {loading ? "Creating Your Plan..." : "Generate Meal Plan"}
-            </Text>
-            {!loading && <Text style={styles.buttonEmoji}></Text>}
+            <View style={styles.buttonContent}>
+              {loading}
+              <Text style={styles.generateButtonText}>
+                {loading ? "Creating Your Plan..." : "Generate Meal Plan"}
+              </Text>
+              {!loading}
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -643,51 +664,52 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingHorizontal: 24,
-  },
-  contentContainer: {
-    // flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
 
   // Header Section
   headerSection: {
     paddingTop: 30,
-    // paddingBottom: 32,
+    paddingBottom: 12,
     alignItems: "center",
-    marginBottom: 0, // <-- ensure no bottom margin
-    paddingBottom: 0, // <-- no padding
   },
   logoImage: {
     width: "70%",
-    height: "20%",
-    marginBottom: 4,
-    marginTop: 12,
-    resizeMode: "center",
+    height: 60,
+    marginBottom: 10,
+    resizeMode: "contain",
     alignSelf: "center",
   },
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
     color: COLORS.textPrimary,
     textAlign: "center",
     marginBottom: 8,
-    lineHeight: 34,
+    lineHeight: 30,
   },
   subtitle: {
     fontSize: 16,
     color: COLORS.textSecondary,
     textAlign: "center",
     lineHeight: 22,
-    paddingHorizontal: 16,
-    marginBottom: 32,
+    paddingHorizontal: 10,
   },
 
   progressContainer: {
     width: "100%",
-    // marginBottom: 8,
-    borderRadius: 8,
-    marginBottom: 0,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    paddingHorizontal: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    // elevation: 2,
   },
   progressHeader: {
     flexDirection: "row",
@@ -701,53 +723,56 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   progressPercent: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 16,
+    fontWeight: "700",
     color: COLORS.primary,
   },
   progressBarBackground: {
     width: "100%",
-    height: 6,
-    backgroundColor: COLORS.greyMedium,
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: COLORS.greyLight,
+    borderRadius: 4,
     overflow: "hidden",
   },
   progressBarFill: {
     height: "100%",
     backgroundColor: COLORS.primary,
-    borderRadius: 3,
-    // Animate smoothly
-    // transition: "width 0.3s ease-in-out",
+    borderRadius: 4,
   },
 
   // Questions Section
   questionsScroll: {
     flex: 1,
+    marginTop: 8,
   },
   questionsScrollContent: {
-    // paddingBottom: 40,
-    paddingTop: 0,
+    paddingBottom: 20,
+  },
+  questionsContainer: {
+    gap: 16,
   },
 
   // Question Cards
   questionCard: {
-    backgroundColor: COLORS.greyMint,
+    backgroundColor: COLORS.cardBackground,
     borderRadius: 20,
-    padding: 22,
-    marginBottom: 20,
-    marginTop: 0,
-    flexDirection: "row",
-    alignItems: "flex-start",
+    padding: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
-    // elevation: 3,
+    // elevation: 2,
+    borderWidth: 2,
+    borderColor: "transparent",
   },
-
   questionCardSelected: {
     // borderColor: COLORS.primary,
-    backgroundColor: COLORS.accent,
+    backgroundColor: COLORS.cardBackground,
+  },
+
+  questionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   // Question Icon
@@ -755,14 +780,14 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   questionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
   },
   questionEmoji: {
-    fontSize: 20,
+    fontSize: 24,
   },
 
   // Question Content
@@ -771,7 +796,7 @@ const styles = StyleSheet.create({
   },
   questionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 4,
     lineHeight: 24,
@@ -780,138 +805,148 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 20,
-    marginBottom: 12,
   },
 
   // Selected Items
+  selectedSection: {
+    marginTop: 16,
+    // paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.greyLight,
+  },
   selectedBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 30,
     alignSelf: "flex-start",
   },
   selectedBadgeText: {
-    color: COLORS.white,
-    fontSize: 13,
-    fontWeight: "500",
+    color: COLORS.primaryDark,
+    fontSize: 14,
+    fontWeight: "600",
   },
   selectedContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 4,
+    gap: 8,
   },
   selectedChip: {
-    backgroundColor: COLORS.primary,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 6,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 30,
   },
   selectedChipText: {
-    color: COLORS.white,
+    color: COLORS.primaryDark,
     fontSize: 13,
     fontWeight: "600",
   },
+
   // Arrow Icon
   arrowContainer: {
     marginLeft: 12,
     justifyContent: "center",
   },
   arrowIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
 
   // Generate Button
   buttonContainer: {
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingTop: 32,
+    paddingBottom: 20,
   },
   generateButton: {
-    borderRadius: 18,
-    paddingVertical: 18,
+    borderRadius: 20,
+    paddingVertical: 20,
     paddingHorizontal: 32,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: COLORS.primary,
-    // Gradient fallback
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    // elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    // elevation: 8,
   },
   generateButtonDisabled: {
     backgroundColor: COLORS.greyMedium,
     shadowOpacity: 0,
   },
+  buttonContent: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   generateButtonText: {
     color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     textAlign: "center",
   },
   buttonEmoji: {
-    fontSize: 16,
+    fontSize: 18,
     marginLeft: 8,
   },
+  loadingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.white,
+    marginRight: 8,
+  },
 
-  // Modal Styles (Enhanced)
+  // Modal Styles
   modalOverlaySimple: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   modalContentSimple: {
-    flex: 1,
-    width: "90%",
+    width: "100%",
     maxWidth: 400,
     backgroundColor: COLORS.white,
-    borderRadius: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    maxHeight: "75%",
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    maxHeight: "80%",
     shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 12,
   },
   modalHeaderSimple: {
-    marginBottom: 20,
+    marginBottom: 24,
     alignItems: "center",
   },
   modalTitleSimple: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 8,
     textAlign: "center",
   },
   helperTextSimple: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   optionItemSimple: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 12,
-    marginVertical: 2,
+    borderRadius: 16,
+    marginVertical: 3,
     backgroundColor: COLORS.greyLight,
   },
   selectedOptionSimple: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: COLORS.greyMint,
     // borderWidth: 2,
     // borderColor: COLORS.primary,
   },
@@ -919,30 +954,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textPrimary,
     fontWeight: "500",
+    flex: 1,
   },
   selectedOptionTextSimple: {
     fontWeight: "600",
-    color: COLORS.primaryDark,
-  },
-  checkmarkSimple: {
-    fontSize: 18,
+    fontSize: 16,
     color: COLORS.primary,
   },
+  checkmarkSimple: {
+    fontSize: 20,
+    color: COLORS.primary,
+    fontWeight: "bold",
+  },
   doneButtonSimple: {
-    marginTop: 20,
+    marginTop: 24,
     backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: "center",
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    // elevation: 6,
   },
   doneButtonTextSimple: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

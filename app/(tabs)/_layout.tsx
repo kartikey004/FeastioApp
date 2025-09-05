@@ -1,8 +1,9 @@
-import { Colors } from "@/constants/Colors";
 import { Tabs } from "expo-router";
-import { Image, useColorScheme } from "react-native";
+import { Image } from "react-native";
 
 // Import your icons
+import { COLORS } from "@/utils/stylesheet";
+import { SafeAreaView } from "react-native-safe-area-context";
 import assistantFilled from "../../assets/images/assistantIconFilled.png";
 import assistantOutlined from "../../assets/images/assistantIconOutlined.png";
 import dashboardFilled from "../../assets/images/dashboardFilledIcon.png";
@@ -12,16 +13,72 @@ import mealPlanOutlined from "../../assets/images/mealPlanOutlinedIcon.png";
 import personFilled from "../../assets/images/profileFilledIcon.png";
 import personOutlined from "../../assets/images/profileOutlinedIcon.png";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+// Enhanced Icon Component
+const TabIcon = ({
+  focused,
+  source,
+  size = 20,
+}: {
+  focused: boolean;
+  source: any;
+  size?: number;
+}) => (
+  <SafeAreaView
+    style={{
+      alignItems: "center",
+      justifyContent: "center",
+      width: 30,
+      height: 30,
+      borderRadius: 16,
+      backgroundColor: focused ? "trasnparent" : "transparent",
+      transform: [{ scale: focused ? 1.3 : 1 }],
+    }}
+  >
+    <Image
+      source={source}
+      style={{
+        width: size,
+        height: size,
+        tintColor: focused ? COLORS.primaryDark : "#666",
+      }}
+      resizeMode="contain"
+    />
+  </SafeAreaView>
+);
 
+export default function TabLayout() {
   return (
     <Tabs
       initialRouteName="homeScreen"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
+        tabBarActiveTintColor: COLORS.textPrimary,
+        tabBarInactiveTintColor: "#666",
         tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+          marginTop: 4,
+        },
+        tabBarStyle: {
+          height: 80,
+          paddingBottom: 20,
+          // paddingTop: 8,
+          backgroundColor: "#fff",
+          borderTopWidth: 0.5,
+          borderTopColor: "#E5E5E5",
+          // elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: -2,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
       }}
     >
       <Tabs.Screen
@@ -29,10 +86,10 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
+              focused={focused}
               source={focused ? dashboardFilled : dashboardOutlined}
-              style={{ width: 24, height: 24 }}
-              resizeMode="contain"
+              size={22}
             />
           ),
         }}
@@ -43,10 +100,10 @@ export default function TabLayout() {
         options={{
           title: "Sage AI",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
+              focused={focused}
               source={focused ? assistantFilled : assistantOutlined}
-              style={{ width: 24, height: 24 }}
-              resizeMode="contain"
+              size={22}
             />
           ),
         }}
@@ -57,10 +114,10 @@ export default function TabLayout() {
         options={{
           title: "Meal Plan",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
+              focused={focused}
               source={focused ? mealPlanFilled : mealPlanOutlined}
-              style={{ width: 24, height: 24 }}
-              resizeMode="contain"
+              size={22}
             />
           ),
         }}
@@ -71,10 +128,10 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
+              focused={focused}
               source={focused ? personFilled : personOutlined}
-              style={{ width: 24, height: 24 }}
-              resizeMode="contain"
+              size={22}
             />
           ),
         }}

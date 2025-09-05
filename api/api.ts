@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
 
 const api = axios.create({
-  baseURL: "http://10.233.140.101:5000/api",
+  baseURL: "http://10.200.121.101:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -72,7 +72,7 @@ const refreshAccessToken = async () => {
     if (!refreshToken) return false;
 
     const response = await axios.post(
-      "http://10.233.140.101:5000/api/auth/refresh",
+      "http://10.200.121.101:5000/api/auth/refresh",
       { refreshToken },
       { headers: { "Content-Type": "application/json" } }
     );

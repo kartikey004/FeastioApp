@@ -16,23 +16,37 @@ const saveTokens = async (accessToken: string, refreshToken: string) => {
   await SecureStore.setItemAsync("refreshToken", refreshToken);
 };
 
+const clearTokens = async () => {
+  await SecureStore.deleteItemAsync("accessToken");
+  await SecureStore.deleteItemAsync("refreshToken");
+  await SecureStore.deleteItemAsync("userProfile");
+};
+
 export const googleSignIn = createAsyncThunk<
   BackendUser,
   string,
   { rejectValue: string }
 >("auth/googleSignIn", async (accessToken, { rejectWithValue }) => {
   try {
-    const response = await api.post("/auth/google", { access_token: accessToken });
+    const response = await api.post("/auth/google", {
+      access_token: accessToken,
+    });
     const { accessToken: newAccessToken, refreshToken, user } = response.data;
 
     await saveTokens(newAccessToken, refreshToken);
+
+    await SecureStore.setItemAsync("userProfile", JSON.stringify(user));
 
     return user;
   } catch (error) {
     let errorMessage = "Google sign-in failed";
     if (error && typeof error === "object" && "response" in error) {
       const err = error as { response?: { status?: number; data?: any } };
-      console.log("Google sign-in error:", err.response?.status, err.response?.data);
+      console.log(
+        "Google sign-in error:",
+        err.response?.status,
+        err.response?.data
+      );
       errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -63,7 +77,11 @@ export const registerUser = createAsyncThunk<
     let errorMessage = "Registration failed";
     if (error && typeof error === "object" && "response" in error) {
       const err = error as { response?: { status?: number; data?: any } };
-      console.log("Registration error:", err.response?.status, err.response?.data);
+      console.log(
+        "Registration error:",
+        err.response?.status,
+        err.response?.data
+      );
       errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -95,6 +113,41 @@ export const loginUser = createAsyncThunk<
     if (error && typeof error === "object" && "response" in error) {
       const err = error as { response?: { status?: number; data?: any } };
       console.log("Login error:", err.response?.status, err.response?.data);
+      errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === "string"
+          ? err.response?.data
+          : undefined) ||
+        errorMessage;
+    } else if (error instanceof Error) {
+      errorMessage = `${errorMessage}: ${error.message}`;
+    }
+    return rejectWithValue(errorMessage);
+  }
+});
+
+export const logoutUser = createAsyncThunk<
+  string,
+  void,
+  { rejectValue: string }
+>("auth/logoutUser", async (_, { rejectWithValue }) => {
+  try {
+    // Call logout API to clear refresh token from server
+    const response = await api.post("/auth/logout");
+
+    // Clear tokens from SecureStore
+    await clearTokens();
+
+    return response.data.message || "Logged out successfully";
+  } catch (error) {
+    // Even if API call fails, clear local tokens
+    await clearTokens();
+
+    let errorMessage = "Logout failed";
+    if (error && typeof error === "object" && "response" in error) {
+      const err = error as { response?: { status?: number; data?: any } };
+      console.log("Logout error:", err.response?.status, err.response?.data);
       errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||

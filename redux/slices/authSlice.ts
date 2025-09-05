@@ -1,5 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { googleSignIn, loginUser, registerUser } from "../thunks/authThunks";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  googleSignIn,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../thunks/authThunks";
 
 interface User {
   id?: string;
@@ -13,12 +18,14 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  successMessage: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
   loading: false,
   error: null,
+  successMessage: null,
 };
 
 const authSlice = createSlice({
@@ -76,6 +83,25 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(logoutUser.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.user = null;
+        state.error = null;
+        state.successMessage = action.payload; // "Logged out successfully"
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        // Even if logout API fails, clear user data locally
+        state.user = null;
         state.error = action.payload as string;
       });
   },

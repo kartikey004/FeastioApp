@@ -1,6 +1,7 @@
 // userSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { updateUserProfile } from "../thunks/userThunks";
+import * as SecureStore from "expo-secure-store";
+import { fetchUserProfile, updateUserProfile } from "../thunks/userThunks";
 
 interface UserProfile {
   dietaryRestrictions: string[];
@@ -16,6 +17,25 @@ interface UserState {
   successMessage: string | null;
 }
 
+export interface FetchedUserProfile {
+  email: string;
+  username: string;
+  phoneNumber?: string;
+  profilePicture?: string;
+  profile: {
+    dietaryRestrictions: string[];
+    allergies: string[];
+    healthGoals: string[];
+    cuisinePreferences: string[];
+  };
+}
+
+interface FetchedProfileState {
+  data: FetchedUserProfile | null;
+  loading: boolean;
+  error: string | null;
+}
+
 const initialState: UserState = {
   profile: {
     dietaryRestrictions: [],
@@ -26,6 +46,12 @@ const initialState: UserState = {
   loading: false,
   error: null,
   successMessage: null,
+};
+
+const initialFetchedProfileState: FetchedProfileState = {
+  data: null,
+  loading: false,
+  error: null,
 };
 
 const userSlice = createSlice({
@@ -59,6 +85,27 @@ const userSlice = createSlice({
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? "Failed to update profile";
+      })
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchUserProfile.fulfilled,
+        (state, action: PayloadAction<FetchedUserProfile>) => {
+          state.loading = false;
+          // Save to SecureStore
+          SecureStore.setItemAsync(
+            "userProfile",
+            JSON.stringify(action.payload)
+          ).catch((err) =>
+            console.error("Failed to save user profile locally:", err)
+          );
+        }
+      )
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Failed to fetch profile";
       });
   },
 });

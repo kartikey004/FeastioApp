@@ -1,3 +1,4 @@
+import { COLORS } from "@/utils/stylesheet";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,29 +13,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { verticalScale } from "react-native-size-matters";
 import { useDispatch, useSelector } from "react-redux";
 import { addUserMessage } from "../../redux/slices/aiChatSlice";
 import { AppDispatch, RootState } from "../../redux/store";
 import { sendMessageToAI } from "../../redux/thunks/aiChatThunks";
-
-const COLORS = {
-  primary: "#00C674",
-  primaryLight: "#7CFCC3",
-  primaryDark: "#00B366",
-  background: "#FCFCF9",
-  accent: "#E3FFF3",
-  greyLight: "#F8F9FA",
-  greyMedium: "#E9ECEF",
-  greyWarm: "#F5F5F3",
-  greyCool: "#F1F3F4",
-  greyMint: "#F0F4F1",
-  greyNeutral: "#F6F6F6",
-  white: "#FFFFFF",
-  textPrimary: "#2D3748",
-  textSecondary: "#718096",
-  sage: "#9CAF88",
-  sageLight: "#E8F5E8",
-};
 
 export default function AIAssistantScreen() {
   const [input, setInput] = useState("");
@@ -73,7 +56,10 @@ export default function AIAssistantScreen() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <View style={styles.titleContainer}>
-              <Text style={styles.sageEmoji}>🌿</Text>
+              <Image
+                source={require("../../assets/images/assistantIconFilled.png")}
+                style={styles.sageEmoji}
+              ></Image>
               <Text style={styles.title}>Sage AI</Text>
             </View>
             <Text style={styles.subtitle}>Nutrition Assistant</Text>
@@ -146,8 +132,8 @@ export default function AIAssistantScreen() {
                 styles.sendButton,
                 {
                   backgroundColor: input.trim()
-                    ? COLORS.primary
-                    : COLORS.greyMedium,
+                    ? COLORS.primaryDark
+                    : COLORS.greyMint,
                 },
               ]}
               onPress={handleSend}
@@ -195,9 +181,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sageEmoji: {
-    fontSize: 24,
+    width: verticalScale(28),
+    height: verticalScale(28),
     marginRight: 8,
+    resizeMode: "contain",
+    color: COLORS.primary,
   },
+
   title: {
     fontSize: 24,
     fontWeight: "700",
@@ -384,7 +374,7 @@ const styles = StyleSheet.create({
   },
   sendButtonIcon: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.primaryDark,
     fontWeight: "600",
     marginLeft: 2,
   },

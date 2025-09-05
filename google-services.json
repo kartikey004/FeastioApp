@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616956247756",
+    "project_id": "nutrisensefb",
+    "storage_bucket": "nutrisensefb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616956247756:android:dbc0e3ab30c55d43480c69",
+        "android_client_info": {
+          "package_name": "com.nutrisense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtS82iSx76K3WOjGGhO3nh18e-3oTFnFY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

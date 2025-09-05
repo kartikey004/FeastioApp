@@ -5,10 +5,14 @@ import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +20,7 @@ import {
   View,
 } from "react-native";
 
+import { COLORS } from "@/utils/stylesheet";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { Colors } from "../constants/Colors";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
@@ -28,6 +33,8 @@ export default function SignupScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -88,7 +95,7 @@ export default function SignupScreen() {
       .unwrap()
       .then((user) => {
         console.log("Registration successful:", user);
-        router.replace("personalizationScreen");
+        router.replace("/personalizationScreen");
       })
       .catch((err) => {
         console.log("Registration failed:", err);
@@ -107,114 +114,170 @@ export default function SignupScreen() {
     console.log("Facebook signup clicked");
   };
 
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+
   return (
-    <LinearGradient
-      colors={[Colors.light.white, Colors.light.white]}
-      style={styles.container}
-    >
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../assets/images/geoNudgeLogo.png")}
-          style={styles.logo}
-          resizeMode="cover"
-        />
-        <Text style={styles.title}>Create Your Account</Text>
-        <Text style={styles.subtitle}>Sign up to start your journey</Text>
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        placeholderTextColor={Colors.light.accent}
-        value={name}
-        onChangeText={setName}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={Colors.light.accent}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
-        placeholderTextColor={Colors.light.accent}
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={Colors.light.accent}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        placeholderTextColor={Colors.light.accent}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity
-        style={[styles.signupButton, loading && { opacity: 0.7 }]}
-        onPress={handleSignup}
-        disabled={loading}
+    <SafeAreaView style={{ flex: 1, marginVertical: 10 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
-        {loading ? (
-          <ActivityIndicator size="small" color={Colors.light.white} />
-        ) : (
-          <Text style={styles.signupButtonText}>Sign Up</Text>
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.buttonContainer}>
-        <Text style={styles.loginText}>Already have an account?</Text>
-        <TouchableOpacity
-          style={styles.loginText}
-          onPress={() => router.push("/loginScreen")}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.loginButtonText}> Login</Text>
-        </TouchableOpacity>
-      </View>
+          <LinearGradient
+            colors={[Colors.light.white, Colors.light.white]}
+            style={styles.container}
+          >
+            <View style={styles.logoContainer}>
+              <Image
+                source={require("../assets/images/nutrisenseLogo.png")}
+                style={styles.logo}
+                resizeMode="cover"
+              />
+              <Text style={styles.subtitle}>Sign up to start your journey</Text>
+            </View>
 
-      <Text style={styles.orText}>Or Sign up with</Text>
+            {/* Full Name */}
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor={COLORS.textSecondary}
+              value={name}
+              onChangeText={setName}
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
+              blurOnSubmit={false}
+            />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.googleButton]}
-          onPress={handleGoogleSignUp}
-        >
-          <Ionicons
-            name="logo-google"
-            size={moderateScale(35)}
-            color="#DB4437"
-          />
-        </TouchableOpacity>
+            {/* Email */}
+            <TextInput
+              ref={emailRef}
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={COLORS.textSecondary}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => phoneRef.current?.focus()}
+              blurOnSubmit={false}
+            />
 
-        <TouchableOpacity
-          style={[styles.button, styles.facebookButton]}
-          onPress={handleFacebookSignUp}
-        >
-          <Ionicons
-            name="logo-facebook"
-            size={moderateScale(40)}
-            color="#1877F2"
-          />
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+            {/* Phone Number */}
+            <TextInput
+              ref={phoneRef}
+              style={styles.input}
+              placeholder="Phone Number"
+              placeholderTextColor={COLORS.textSecondary}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <View style={styles.passwordContainer}>
+              {/* Password */}
+              <TextInput
+                ref={passwordRef}
+                style={styles.inputPassword}
+                placeholder="Password"
+                placeholderTextColor={COLORS.textSecondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={22}
+                  color={COLORS.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                ref={confirmPasswordRef}
+                style={styles.inputPassword}
+                placeholder="Confirm Password"
+                placeholderTextColor={COLORS.textSecondary}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                returnKeyType="done"
+                onSubmitEditing={handleSignup}
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeIcon}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? "eye-off" : "eye"}
+                  size={22}
+                  color={COLORS.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Signup Button */}
+            <TouchableOpacity
+              style={[styles.signupButton, loading && { opacity: 0.7 }]}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.light.white} />
+              ) : (
+                <Text style={styles.signupButtonText}>Sign Up</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Navigation */}
+            <View style={styles.buttonContainer}>
+              <Text style={styles.loginText}>Already have an account?</Text>
+              <TouchableOpacity
+                style={styles.loginText}
+                onPress={() => router.replace("/loginScreen")}
+              >
+                <Text style={styles.loginButtonText}> Sign In</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Social Signup */}
+            {/* <Text style={styles.orText}>OR</Text> */}
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.button, styles.googleButton]}
+                onPress={handleGoogleSignUp}
+              >
+                <Ionicons name="logo-google" size={35} color="#DB4437" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.facebookButton]}
+                onPress={handleFacebookSignUp}
+              >
+                <Ionicons name="logo-facebook" size={40} color="#1877F2" />
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -226,13 +289,12 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: verticalScale(30),
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(25),
   },
   logo: {
-    width: scale(120),
-    height: scale(120),
-    marginBottom: verticalScale(15),
-    borderRadius: scale(60),
+    width: "90%",
+    height: verticalScale(60),
   },
   title: {
     fontSize: moderateScale(28),
@@ -242,51 +304,78 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: moderateScale(16),
-    color: Colors.light.accent,
+    color: COLORS.textPrimary,
     textAlign: "center",
     marginTop: verticalScale(5),
   },
   input: {
     height: verticalScale(45),
     borderWidth: 1,
-    borderColor: Colors.light.accent,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: scale(10),
+    borderBottomLeftRadius: scale(10),
+    borderColor: COLORS.primaryDark,
     borderRadius: scale(8),
     paddingHorizontal: scale(12),
     fontSize: moderateScale(14),
     marginBottom: verticalScale(12),
-    color: Colors.light.primary,
-    backgroundColor: Colors.light.white,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.greyLight,
+  },
+  passwordContainer: {
+    height: verticalScale(45),
+    borderWidth: 1,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: scale(10),
+    borderBottomLeftRadius: scale(10),
+    borderColor: COLORS.primaryDark,
+    borderRadius: scale(8),
+    paddingHorizontal: scale(12),
+    fontSize: moderateScale(14),
+    marginBottom: verticalScale(12),
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.greyLight,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputPassword: {
+    flex: 1,
+    height: 48,
+    color: COLORS.textPrimary,
+  },
+  eyeIcon: {
+    padding: 5,
   },
   signupButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: COLORS.primaryDark,
     borderRadius: scale(8),
     paddingVertical: verticalScale(12),
     alignItems: "center",
-    marginBottom: verticalScale(10),
+    marginVertical: verticalScale(16),
   },
   signupButtonText: {
-    color: Colors.light.white,
+    color: COLORS.white,
     fontSize: moderateScale(16),
     fontWeight: "600",
   },
   loginText: {
     fontSize: moderateScale(14),
-    color: Colors.light.accent,
+    color: COLORS.textPrimary,
     textAlign: "center",
     // marginTop: verticalScale(1),
-    marginBottom: verticalScale(15),
+    marginBottom: verticalScale(5),
   },
   loginButtonText: {
     fontSize: moderateScale(14),
-    color: Colors.light.primary,
+    color: COLORS.primaryDark,
     fontWeight: "600",
   },
   orText: {
     fontSize: moderateScale(16),
-    color: Colors.light.accent,
+    color: COLORS.primaryDark,
     textAlign: "center",
     marginTop: verticalScale(5),
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(5),
   },
   buttonContainer: {
     flexDirection: "row",

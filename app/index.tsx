@@ -1,18 +1,70 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as Font from "expo-font";
 import { useRouter } from "expo-router";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
-export default function WelcomeScreen() {
+export default function SplashScreen() {
   const router = useRouter();
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Run animation on mount
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Navigate to next screen after 2.5 sec
+    const timer = setTimeout(() => {
+      router.replace("/loginScreen"); // or /welcomeScreen
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [router, scaleAnim, opacityAnim]);
+
+  useEffect(() => {
+    async function loadFonts() {
+      await Font.loadAsync(Ionicons.font);
+    }
+    loadFonts();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to GeoNudge</Text>
-      <Button title="Get Started" onPress={() => router.push("/loginScreen")} />
+      <Animated.Image
+        source={require("../assets/images/nutrisenseLogo.png")}
+        style={[
+          styles.logo,
+          {
+            transform: [{ scale: scaleAnim }],
+            opacity: opacityAnim,
+          },
+        ]}
+        resizeMode="contain"
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  logo: {
+    width: 280,
+    height: 280,
+  },
 });

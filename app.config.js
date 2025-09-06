@@ -40,7 +40,8 @@ export default {
       [
         "@react-native-google-signin/google-signin",
         {
-          iosUrlScheme: `com.googleusercontent.apps.${process.env.GOOGLE_IOS_CLIENT_ID}`,
+          iosUrlScheme:
+            "com.googleusercontent.apps.344297356301-3tltelaf9t54p3v5lj4fe0t9nv0d1d3e",
         },
       ],
     ],
@@ -53,6 +54,10 @@ export default {
       googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
       googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
       googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+
+      eas: {
+        projectId: "5c1ce526-a9d5-4f0b-937b-aa1b8e8bd2d9",
+      },
     },
   },
 };

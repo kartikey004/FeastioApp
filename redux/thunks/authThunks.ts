@@ -62,37 +62,54 @@ export const googleSignIn = createAsyncThunk<
 });
 
 export const registerUser = createAsyncThunk<
-  BackendUser,
+  { userId: string },
   { username: string; email: string; password: string; phoneNumber: string },
   { rejectValue: string }
 >("auth/registerUser", async (formData, { rejectWithValue }) => {
   try {
     const response = await api.post("/auth/register", formData);
+    return response.data; // { message, userId }
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message || error?.message || "Registration failed";
+    return rejectWithValue(errMsg);
+  }
+});
+
+export const verifyOTP = createAsyncThunk<
+  BackendUser,
+  { userId: string; otp: string },
+  { rejectValue: string }
+>("auth/verifyOTP", async ({ userId, otp }, { rejectWithValue }) => {
+  try {
+    const response = await api.post("/auth/verify-otp", { userId, otp });
     const { accessToken, refreshToken, user } = response.data;
 
     await saveTokens(accessToken, refreshToken);
+    await SecureStore.setItemAsync("userProfile", JSON.stringify(user));
 
     return user;
-  } catch (error) {
-    let errorMessage = "Registration failed";
-    if (error && typeof error === "object" && "response" in error) {
-      const err = error as { response?: { status?: number; data?: any } };
-      console.log(
-        "Registration error:",
-        err.response?.status,
-        err.response?.data
-      );
-      errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        (typeof err.response?.data === "string"
-          ? err.response?.data
-          : undefined) ||
-        errorMessage;
-    } else if (error instanceof Error) {
-      errorMessage = `${errorMessage}: ${error.message}`;
-    }
-    return rejectWithValue(errorMessage);
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "OTP verification failed";
+    return rejectWithValue(errMsg);
+  }
+});
+
+export const resendOTP = createAsyncThunk<
+  { userId: string },
+  { email: string },
+  { rejectValue: string }
+>("auth/resendOTP", async ({ email }, { rejectWithValue }) => {
+  try {
+    const response = await api.post("/auth/resend-otp", { email });
+    return response.data; // { message, userId }
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message || error?.message || "Resend OTP failed";
+    return rejectWithValue(errMsg);
   }
 });
 
@@ -106,24 +123,13 @@ export const loginUser = createAsyncThunk<
     const { accessToken, refreshToken, user } = response.data;
 
     await saveTokens(accessToken, refreshToken);
+    await SecureStore.setItemAsync("userProfile", JSON.stringify(user));
 
     return user;
-  } catch (error) {
-    let errorMessage = "Login failed";
-    if (error && typeof error === "object" && "response" in error) {
-      const err = error as { response?: { status?: number; data?: any } };
-      console.log("Login error:", err.response?.status, err.response?.data);
-      errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        (typeof err.response?.data === "string"
-          ? err.response?.data
-          : undefined) ||
-        errorMessage;
-    } else if (error instanceof Error) {
-      errorMessage = `${errorMessage}: ${error.message}`;
-    }
-    return rejectWithValue(errorMessage);
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message || error?.message || "Login failed";
+    return rejectWithValue(errMsg);
   }
 });
 

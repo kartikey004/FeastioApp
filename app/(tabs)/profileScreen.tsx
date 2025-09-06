@@ -4,8 +4,11 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  Platform,
   RefreshControl,
+  SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -43,6 +46,16 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleEditPreferences = () => {
+    // Alert.alert(
+    //   "Feature Coming Soon",
+    //   "The 'Edit Preferences' feature will be upgraded in the next updates. Stay tuned!",
+    //   [
+    //     {
+    //       text: "OK",
+    //       onPress: () => console.log("Alert closed"),
+    //     },
+    //   ]
+    // );
     console.log("Navigate to edit preferences");
     router.push("/personalizationScreen");
   };
@@ -135,101 +148,108 @@ const ProfileScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={[COLORS.primary]}
-          tintColor={COLORS.primary}
-        />
-      }
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Dashboard</Text>
-        <TouchableOpacity
-          onPress={handleSettings}
-          style={styles.settingsButton}
-        >
-          <Ionicons
-            name="settings-outline"
-            size={24}
-            color={COLORS.textPrimary}
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
           />
-        </TouchableOpacity>
-      </View>
+        }
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Dashboard</Text>
+          <TouchableOpacity
+            onPress={handleSettings}
+            style={styles.settingsButton}
+          >
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={COLORS.textPrimary}
+            />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.profileCard}>
-        <View style={styles.profileHeader}>
-          {renderProfilePicture()}
-          <View style={styles.profileInfo}>
-            <Text style={styles.username}>
-              {profileData?.username || "User"}
-            </Text>
-            <Text style={styles.email}>{profileData?.email || "No email"}</Text>
-            {profileData?.phoneNumber && (
-              <Text style={styles.phone}>{profileData.phoneNumber}</Text>
+        <View style={styles.profileCard}>
+          <View style={styles.profileHeader}>
+            {renderProfilePicture()}
+            <View style={styles.profileInfo}>
+              <Text style={styles.username}>
+                {profileData?.username || "User"}
+              </Text>
+              <Text style={styles.email}>
+                {profileData?.email || "No email"}
+              </Text>
+              {profileData?.phoneNumber && (
+                <Text style={styles.phone}>{profileData.phoneNumber}</Text>
+              )}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={handleEditProfile}
+          >
+            <Ionicons name="pencil" size={16} color={COLORS.white} />
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Your Preferences</Text>
+          {/* <View style={styles.sectionLine} /> */}
+          <TouchableOpacity
+            style={styles.editPreferencesButton}
+            onPress={handleEditPreferences}
+          >
+            <Ionicons name="create-outline" size={14} color={COLORS.white} />
+            <Text style={styles.editPreferencesText}>Edit</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.detailsContainer}>
+          <View style={styles.preferencesRow}>
+            {renderInfoCard(
+              "Dietary Restrictions",
+              profileData?.profile?.dietaryRestrictions || [],
+              "nutrition-outline"
+            )}
+            {renderInfoCard(
+              "Allergies",
+              profileData?.profile?.allergies || [],
+              "medical-outline"
+            )}
+          </View>
+
+          <View style={styles.preferencesRow}>
+            {renderInfoCard(
+              "Health Goals",
+              profileData?.profile?.healthGoals || [],
+              "fitness-outline"
+            )}
+            {renderInfoCard(
+              "Cuisine Preferences",
+              profileData?.profile?.cuisinePreferences || [],
+              "restaurant-outline"
             )}
           </View>
         </View>
 
-        <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
-          <Ionicons name="pencil" size={16} color={COLORS.white} />
-          <Text style={styles.editButtonText}>Edit Profile</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Your Preferences</Text>
-        {/* <View style={styles.sectionLine} /> */}
-        <TouchableOpacity
-          style={styles.editPreferencesButton}
-          onPress={handleEditPreferences}
-        >
-          <Ionicons name="create-outline" size={14} color={COLORS.white} />
-          <Text style={styles.editPreferencesText}>Edit</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.detailsContainer}>
-        <View style={styles.preferencesRow}>
-          {renderInfoCard(
-            "Dietary Restrictions",
-            profileData?.profile?.dietaryRestrictions || [],
-            "nutrition-outline"
-          )}
-          {renderInfoCard(
-            "Allergies",
-            profileData?.profile?.allergies || [],
-            "medical-outline"
-          )}
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={20} color={COLORS.white} />
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.preferencesRow}>
-          {renderInfoCard(
-            "Health Goals",
-            profileData?.profile?.healthGoals || [],
-            "fitness-outline"
-          )}
-          {renderInfoCard(
-            "Cuisine Preferences",
-            profileData?.profile?.cuisinePreferences || [],
-            "restaurant-outline"
-          )}
-        </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={COLORS.white} />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -237,6 +257,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   contentContainer: {
     paddingBottom: 30,
@@ -257,7 +278,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 60,
+    // paddingTop: 30,
     paddingBottom: 20,
     backgroundColor: COLORS.background,
   },
@@ -277,7 +298,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingTop: 24,
     paddingBottom: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -291,14 +312,14 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   profileImage: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     borderRadius: 40,
     marginRight: 16,
   },
   profileImagePlaceholder: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     borderRadius: 40,
     backgroundColor: COLORS.primary,
     justifyContent: "center",
@@ -320,7 +341,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   email: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textSecondary,
     marginBottom: 2,
   },

@@ -24,7 +24,6 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    // Navigate to next screen after 2.5 sec
     const timer = setTimeout(() => {
       router.replace("/loginScreen"); // or /welcomeScreen
     }, 3000);

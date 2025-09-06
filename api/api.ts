@@ -46,7 +46,7 @@ api.interceptors.response.use(
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
-      console.log("GeoNudge: Access token expired, refreshing...");
+      console.log("NutriSense: Access token expired, refreshing...");
 
       const success = await refreshAccessToken();
 
@@ -67,7 +67,7 @@ api.interceptors.response.use(
 
 const refreshAccessToken = async () => {
   try {
-    console.log("GeoNudge: Requesting new access token...");
+    console.log("NutriSense: Requesting new access token...");
     const { refreshToken } = await getTokens();
     if (!refreshToken) return false;
 
@@ -79,14 +79,14 @@ const refreshAccessToken = async () => {
     if (response.data.accessToken && response.data.refreshToken) {
       const { accessToken, refreshToken } = response.data;
       await saveTokens(accessToken, refreshToken);
-      console.log("GeoNudge: New access token stored:", accessToken);
+      console.log("NutriSense: New access token stored:", accessToken);
       return true;
     } else {
-      console.error("GeoNudge: Refresh failed:", response.data.message);
+      console.error("NutriSense: Refresh failed:", response.data.message);
       return "SESSION_EXPIRED";
     }
   } catch (error) {
-    console.error("GeoNudge: Error refreshing token:", error);
+    console.error("NutriSense: Error refreshing token:", error);
     return "SESSION_EXPIRED";
   }
 };

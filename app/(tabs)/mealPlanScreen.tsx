@@ -20,7 +20,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { COLORS } from "../../utils/stylesheet";
 
@@ -158,7 +157,7 @@ const MealPlanScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {loading && <LoadingOverlay />}
       <View style={styles.headerGradient}>
         <View style={styles.headerContent}>
@@ -290,7 +289,7 @@ const MealPlanScreen = () => {
                       <View style={styles.noMealsContainer}>
                         <View style={styles.noMealsIconContainer}>
                           <Text style={styles.noMealsIcon}>🍽️</Text>
-                          <View style={styles.noMealsIconBg} />
+                          {/* <View style={styles.noMealsIconBg} /> */}
                         </View>
                         <Text style={styles.noMealsTitle}>
                           No meals planned
@@ -303,7 +302,7 @@ const MealPlanScreen = () => {
                           style={styles.noMealsAddButton}
                           onPress={() =>
                             Alert.alert(
-                              "Feature Coming Soon 🚀",
+                              "Feature Coming Soon",
                               "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
                               [
                                 {
@@ -505,7 +504,7 @@ const MealPlanScreen = () => {
                           style={styles.addMealTimelineItem}
                           onPress={() =>
                             Alert.alert(
-                              "Feature Coming Soon 🚀",
+                              "Feature Coming Soon",
                               "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
                               [
                                 {
@@ -620,7 +619,7 @@ const MealPlanScreen = () => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -638,9 +637,9 @@ const styles = StyleSheet.create({
   // Header Styles
   headerGradient: {
     backgroundColor: COLORS.primaryDark,
-    paddingTop: 8,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingTop: 30,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,

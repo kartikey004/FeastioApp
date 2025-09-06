@@ -49,22 +49,33 @@ export const fetchUserProfile = createAsyncThunk<
   { rejectValue: string }
 >("user/fetchUserProfile", async (_, { rejectWithValue }) => {
   try {
-    // 1️⃣ Check SecureStore first
+    // 1️⃣ Return cached data immediately (for faster UI)
     const cachedData = await SecureStore.getItemAsync("userProfile");
     if (cachedData) {
       const parsedData: FetchedUserProfile = JSON.parse(cachedData);
       console.log("Using cached profile:", parsedData);
-      return parsedData;
+
+      // Don’t stop here → still fetch latest from API in background
+      api.get("/user/profile").then(async (res) => {
+        const freshData: FetchedUserProfile = res.data.data;
+        await SecureStore.setItemAsync(
+          "userProfile",
+          JSON.stringify(freshData)
+        );
+        console.log("Updated cache with fresh profile:", freshData);
+      });
+
+      return parsedData; // return cached immediately
     }
 
-    // 2️⃣ Fetch from API if not cached
+    // 2️⃣ No cache → fetch from API
     const res = await api.get("/user/profile");
-    const data: FetchedUserProfile = res.data.data;
+    const freshData: FetchedUserProfile = res.data.data;
 
-    // 3️⃣ Save to SecureStore for future use
-    await SecureStore.setItemAsync("userProfile", JSON.stringify(data));
+    // 3️⃣ Save fresh data to SecureStore
+    await SecureStore.setItemAsync("userProfile", JSON.stringify(freshData));
 
-    return data;
+    return freshData;
   } catch (err: any) {
     console.error(
       "Error fetching user profile:",

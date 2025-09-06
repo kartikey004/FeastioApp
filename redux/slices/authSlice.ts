@@ -4,6 +4,8 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resendOTP,
+  verifyOTP,
 } from "../thunks/authThunks";
 
 interface User {
@@ -16,6 +18,8 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  userId: string | null; //for otp verification
+  isOtpSent: boolean;
   loading: boolean;
   error: string | null;
   successMessage: string | null;
@@ -23,6 +27,8 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
+  userId: null,
+  isOtpSent: false,
   loading: false,
   error: null,
   successMessage: null,
@@ -34,7 +40,10 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.userId = null;
+      state.isOtpSent = false;
       state.error = null;
+      state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
@@ -59,13 +68,52 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.isOtpSent = false;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.userId = action.payload.userId;
+        state.isOtpSent = true;
         state.error = null;
+        state.successMessage =
+          "OTP sent to your email. Please verify to log in.";
       })
       .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.isOtpSent = false;
+      });
+    builder
+      .addCase(verifyOTP.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyOTP.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.userId = null;
+        state.isOtpSent = false;
+        state.error = null;
+        state.successMessage = "Email verified and logged in successfully";
+      })
+      .addCase(verifyOTP.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(resendOTP.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendOTP.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userId = action.payload.userId;
+        state.isOtpSent = true;
+        state.error = null;
+        state.successMessage = "A new OTP has been sent to your email";
+      })
+      .addCase(resendOTP.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -100,8 +148,9 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
-        // Even if logout API fails, clear user data locally
         state.user = null;
+        state.userId = null;
+        state.isOtpSent = false;
         state.error = action.payload as string;
       });
   },

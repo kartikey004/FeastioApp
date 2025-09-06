@@ -31,7 +31,7 @@ const TabIcon = ({
       height: 30,
       borderRadius: 16,
       backgroundColor: focused ? "trasnparent" : "transparent",
-      transform: [{ scale: focused ? 1.3 : 1 }],
+      transform: [{ scale: focused ? 1.1 : 1 }],
     }}
   >
     <Image

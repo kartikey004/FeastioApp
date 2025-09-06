@@ -2,6 +2,7 @@ import { AppDispatch } from "@/redux/store";
 import { useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   FlatList,
@@ -552,7 +553,7 @@ const PersonalizationScreen = () => {
                 </View> */}
               </View>
               <View style={styles.questionContent}>
-                <Text style={styles.questionTitle}>Favorite Cuisines</Text>
+                <Text style={styles.questionTitle}>Favourite Cuisines</Text>
                 <Text style={styles.questionSubtitle}>
                   What flavors do you love?
                 </Text>
@@ -590,7 +591,13 @@ const PersonalizationScreen = () => {
             accessibilityLabel="Generate meal plan"
           >
             <View style={styles.buttonContent}>
-              {loading}
+              {loading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                ></ActivityIndicator>
+              )}
               <Text style={styles.generateButtonText}>
                 {loading ? "Creating Your Plan..." : "Generate Meal Plan"}
               </Text>
@@ -724,12 +731,12 @@ const styles = StyleSheet.create({
   },
   progressPercent: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "600",
     color: COLORS.primary,
   },
   progressBarBackground: {
     width: "100%",
-    height: 8,
+    height: 6,
     backgroundColor: COLORS.greyLight,
     borderRadius: 4,
     overflow: "hidden",

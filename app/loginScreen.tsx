@@ -1,12 +1,8 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { COLORS } from "@/utils/stylesheet";
 import { Ionicons } from "@expo/vector-icons";
-import * as AuthSession from "expo-auth-session";
-import * as Google from "expo-auth-session/providers/google";
-import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -22,25 +18,25 @@ import {
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { Colors } from "../constants/Colors";
-import { googleSignIn, loginUser } from "../redux/thunks/authThunks";
+import { loginUser } from "../redux/thunks/authThunks";
 
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading, error, user } = useAppSelector((state) => state.auth);
-  WebBrowser.maybeCompleteAuthSession();
-  const makeRedirect = AuthSession.makeRedirectUri as unknown as (
-    opts: any
-  ) => string;
-  const redirectUri = makeRedirect({ useProxy: true });
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: Constants.expoConfig?.extra?.googleExpoClientId,
-    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
-    webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-    redirectUri,
-    scopes: ["profile", "email"],
-  } as any);
+  // WebBrowser.maybeCompleteAuthSession();
+  // const makeRedirect = AuthSession.makeRedirectUri as unknown as (
+  //   opts: any
+  // ) => string;
+  // const redirectUri = makeRedirect({ useProxy: true });
+  // const [request, response, promptAsync] = Google.useAuthRequest({
+  //   clientId: Constants.expoConfig?.extra?.googleExpoClientId,
+  //   iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+  //   androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
+  //   webClientId: Constants.expoConfig?.extra?.googleWebClientId,
+  //   redirectUri,
+  //   scopes: ["profile", "email"],
+  // } as any);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,16 +50,16 @@ export default function LoginScreen() {
     }
   }, [user, router]);
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const accessToken = response.authentication?.accessToken;
-      if (accessToken) {
-        dispatch(googleSignIn(accessToken));
-      }
-    } else if (response?.type === "error") {
-      console.log("Google Sign-In error:", response.error);
-    }
-  }, [response, dispatch]);
+  // useEffect(() => {
+  //   if (response?.type === "success") {
+  //     const accessToken = response.authentication?.accessToken;
+  //     if (accessToken) {
+  //       dispatch(googleSignIn(accessToken));
+  //     }
+  //   } else if (response?.type === "error") {
+  //     console.log("Google Sign-In error:", response.error);
+  //   }
+  // }, [response, dispatch]);
 
   const handleLogin = () => {
     let hasError = false;
@@ -101,7 +97,7 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     console.log("Google Sign-In pressed");
-    await promptAsync();
+    // await promptAsync();
   };
 
   const handleFacebookSignIn = () => {

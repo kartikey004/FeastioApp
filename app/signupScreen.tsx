@@ -1,11 +1,9 @@
-import { googleSignIn, registerUser } from "@/redux/thunks/authThunks";
+import { registerUser } from "@/redux/thunks/authThunks";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Google from "expo-auth-session/providers/google";
-import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -35,35 +33,107 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loading, error, user } = useAppSelector((state) => state.auth);
+  const { loading, error, userId, isOtpSent } = useAppSelector(
+    (state) => state.auth
+  );
 
   // Combine all configuration into a single object
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
-    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-    webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-    scopes: ["profile", "email"],
-  });
+  // const [request, response, promptAsync] = Google.useAuthRequest({
+  //   androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
+  //   iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+  //   webClientId: Constants.expoConfig?.extra?.googleWebClientId,
+  //   scopes: ["profile", "email"],
+  // });
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const accessToken = response.authentication?.accessToken;
-      if (accessToken) {
-        dispatch(googleSignIn(accessToken));
-      }
-    } else if (response?.type === "error") {
-      console.log("Google Auth error:", response.error);
-    }
-  }, [dispatch, response]);
+  // useEffect(() => {
+  //   if (response?.type === "success") {
+  //     const accessToken = response.authentication?.accessToken;
+  //     if (accessToken) {
+  //       dispatch(googleSignIn(accessToken));
+  //     }
+  //   } else if (response?.type === "error") {
+  //     console.log("Google Auth error:", response.error);
+  //   }
+  // }, [dispatch, response]);
 
-  useEffect(() => {
-    if (user) {
-      router.replace("/personalizationScreen");
+  // useEffect(() => {
+  //   if (user) {
+  //     router.replace("/personalizationScreen");
+  //   }
+  // }, [user, router]);
+
+  // Email validation
+  // Email validation
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (!value) {
+      setEmailError(""); // clear error if empty
+      return;
     }
-  }, [user, router]);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  // Phone validation
+  const handlePhoneChange = (value: string) => {
+    setPhoneNumber(value);
+    if (!value) {
+      setPhoneError(""); // clear error if empty
+      return;
+    }
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(value)) {
+      setPhoneError("Phone number must be 10 digits");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  // Password validation
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (!value) {
+      setPasswordError(""); // clear error if empty
+      setConfirmPasswordError(""); // also clear confirmPasswordError if password is cleared
+      return;
+    }
+    if (value.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+    } else {
+      setPasswordError("");
+    }
+    // Also validate confirm password if user typed it
+    if (confirmPassword && value !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
+
+  // Confirm password validation
+  const handleConfirmPasswordChange = (value: string) => {
+    setConfirmPassword(value);
+    if (!value) {
+      setConfirmPasswordError(""); // clear error if empty
+      return;
+    }
+    if (password !== value) {
+      setConfirmPasswordError("Passwords do not match");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
 
   const handleSignup = () => {
     console.log("Signup clicked with:", {
@@ -95,7 +165,10 @@ export default function SignupScreen() {
       .unwrap()
       .then((user) => {
         console.log("Registration successful:", user);
-        router.replace("/personalizationScreen");
+        router.replace({
+          pathname: "/otpVerificationScreen",
+          params: { userId: user.userId, email: email },
+        });
       })
       .catch((err) => {
         console.log("Registration failed:", err);
@@ -103,11 +176,11 @@ export default function SignupScreen() {
   };
 
   const handleGoogleSignUp = async () => {
-    if (request) {
-      await promptAsync();
-    } else {
-      console.log("Google Auth request not ready");
-    }
+    // if (request) {
+    //   await promptAsync();
+    // } else {
+    //   console.log("Google Auth request not ready");
+    // }
   };
 
   const handleFacebookSignUp = () => {
@@ -152,9 +225,10 @@ export default function SignupScreen() {
               onChangeText={setName}
               returnKeyType="next"
               onSubmitEditing={() => emailRef.current?.focus()}
-              blurOnSubmit={false}
             />
-
+            {emailError ? (
+              <Text style={styles.errorText}>{emailError}</Text>
+            ) : null}
             {/* Email */}
             <TextInput
               ref={emailRef}
@@ -162,27 +236,31 @@ export default function SignupScreen() {
               placeholder="Email"
               placeholderTextColor={COLORS.textSecondary}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={handleEmailChange}
               keyboardType="email-address"
               autoCapitalize="none"
               returnKeyType="next"
               onSubmitEditing={() => phoneRef.current?.focus()}
-              blurOnSubmit={false}
             />
 
             {/* Phone Number */}
+            {phoneError ? (
+              <Text style={styles.errorText}>{phoneError}</Text>
+            ) : null}
             <TextInput
               ref={phoneRef}
               style={styles.input}
               placeholder="Phone Number"
               placeholderTextColor={COLORS.textSecondary}
               value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              onChangeText={handlePhoneChange}
               keyboardType="phone-pad"
               returnKeyType="next"
               onSubmitEditing={() => passwordRef.current?.focus()}
-              blurOnSubmit={false}
             />
+            {passwordError ? (
+              <Text style={styles.errorText}>{passwordError}</Text>
+            ) : null}
             <View style={styles.passwordContainer}>
               {/* Password */}
               <TextInput
@@ -191,11 +269,10 @@ export default function SignupScreen() {
                 placeholder="Password"
                 placeholderTextColor={COLORS.textSecondary}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={handlePasswordChange}
                 secureTextEntry={!showPassword}
                 returnKeyType="next"
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-                blurOnSubmit={false}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -209,6 +286,9 @@ export default function SignupScreen() {
               </TouchableOpacity>
             </View>
 
+            {confirmPasswordError ? (
+              <Text style={styles.errorText}>{confirmPasswordError}</Text>
+            ) : null}
             <View style={styles.passwordContainer}>
               <TextInput
                 ref={confirmPasswordRef}
@@ -216,7 +296,7 @@ export default function SignupScreen() {
                 placeholder="Confirm Password"
                 placeholderTextColor={COLORS.textSecondary}
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={handleConfirmPasswordChange}
                 secureTextEntry={!showConfirmPassword}
                 returnKeyType="done"
                 onSubmitEditing={handleSignup}
@@ -242,7 +322,7 @@ export default function SignupScreen() {
               {loading ? (
                 <ActivityIndicator size="small" color={Colors.light.white} />
               ) : (
-                <Text style={styles.signupButtonText}>Sign Up</Text>
+                <Text style={styles.signupButtonText}>Send OTP</Text>
               )}
             </TouchableOpacity>
 
@@ -289,7 +369,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginTop: verticalScale(20),
+    marginTop: verticalScale(30),
     marginBottom: verticalScale(25),
   },
   logo: {
@@ -318,7 +398,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(8),
     paddingHorizontal: scale(12),
     fontSize: moderateScale(14),
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(10),
     color: COLORS.textPrimary,
     backgroundColor: COLORS.greyLight,
   },
@@ -332,7 +412,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(8),
     paddingHorizontal: scale(12),
     fontSize: moderateScale(14),
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(10),
     color: COLORS.textPrimary,
     backgroundColor: COLORS.greyLight,
     flexDirection: "row",
@@ -346,6 +426,13 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 5,
   },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginBottom: 4,
+    marginLeft: 5,
+  },
+
   signupButton: {
     backgroundColor: COLORS.primaryDark,
     borderRadius: scale(8),

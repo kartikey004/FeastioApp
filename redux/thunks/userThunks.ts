@@ -47,15 +47,15 @@ export const fetchUserProfile = createAsyncThunk<
   FetchedUserProfile,
   void,
   { rejectValue: string }
->("user/fetchUserProfile", async (_, { rejectWithValue }) => {
+>("user/fetchUserProfile", async (_, { dispatch, rejectWithValue }) => {
   try {
-    // 1️⃣ Return cached data immediately (for faster UI)
     const cachedData = await SecureStore.getItemAsync("userProfile");
+
     if (cachedData) {
       const parsedData: FetchedUserProfile = JSON.parse(cachedData);
       console.log("Using cached profile:", parsedData);
 
-      // Don’t stop here → still fetch latest from API in background
+      // fetch fresh in background
       api.get("/user/profile").then(async (res) => {
         const freshData: FetchedUserProfile = res.data.data;
         await SecureStore.setItemAsync(
@@ -63,18 +63,25 @@ export const fetchUserProfile = createAsyncThunk<
           JSON.stringify(freshData)
         );
         console.log("Updated cache with fresh profile:", freshData);
+
+        // update Redux immediately
+        dispatch({
+          type: "user/fetchUserProfile/fulfilled",
+          payload: freshData,
+        });
       });
 
-      return parsedData; // return cached immediately
+      return parsedData;
     }
 
-    // 2️⃣ No cache → fetch from API
+    // ⬇️ No cache → force fresh profile fetch
+    console.log("No cache found, fetching fresh profile...");
     const res = await api.get("/user/profile");
     const freshData: FetchedUserProfile = res.data.data;
 
-    // 3️⃣ Save fresh data to SecureStore
+    // save & return
     await SecureStore.setItemAsync("userProfile", JSON.stringify(freshData));
-
+    console.log("Fetched fresh profile:", freshData);
     return freshData;
   } catch (err: any) {
     console.error(

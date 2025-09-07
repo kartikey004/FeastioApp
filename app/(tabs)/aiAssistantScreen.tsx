@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 1,
   },
   userBubble: {
     alignSelf: "flex-end",
@@ -265,6 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignSelf: "flex-start",
     maxWidth: "70%",
+    // elevation: 10,
   },
   typingText: {
     color: COLORS.sage,

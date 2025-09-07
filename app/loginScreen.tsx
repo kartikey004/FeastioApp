@@ -1,3 +1,4 @@
+import AlertModal from "@/components/AlertModal";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { COLORS } from "@/utils/stylesheet";
 import { Ionicons } from "@expo/vector-icons";
@@ -44,22 +45,63 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info" as "success" | "error" | "warning" | "info",
+    primaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+    secondaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+  });
+
   useEffect(() => {
     if (user) {
       router.replace("/(tabs)/homeScreen");
     }
   }, [user, router]);
 
-  // useEffect(() => {
-  //   if (response?.type === "success") {
-  //     const accessToken = response.authentication?.accessToken;
-  //     if (accessToken) {
-  //       dispatch(googleSignIn(accessToken));
-  //     }
-  //   } else if (response?.type === "error") {
-  //     console.log("Google Sign-In error:", response.error);
-  //   }
-  // }, [response, dispatch]);
+  useEffect(() => {
+    if (user) {
+      // Show success modal when user logs in successfully
+      showModal({
+        title: "Welcome Back!",
+        message: "You have successfully signed in to your account.",
+        type: "success",
+        primaryButton: {
+          text: "Continue",
+          onPress: () => {
+            setModalVisible(false);
+            router.replace("/(tabs)/homeScreen");
+          },
+        },
+      });
+    }
+  }, [user, router]);
+
+  useEffect(() => {
+    if (error) {
+      showModal({
+        title: "Sign In Failed",
+        message: error || "An unexpected error occurred. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
+    }
+  }, [error]);
+
+  const showModal = (
+    config: Partial<typeof modalConfig> & { message: string }
+  ) => {
+    setModalConfig({ ...modalConfig, ...config });
+    setModalVisible(true);
+  };
 
   const handleLogin = () => {
     let hasError = false;
@@ -84,7 +126,20 @@ export default function LoginScreen() {
       setPasswordError("");
     }
 
-    if (hasError) return;
+    if (hasError) {
+      // Show validation error modal
+      showModal({
+        title: "Validation Error",
+        message: "Please check your email and password and try again.",
+        type: "warning",
+        primaryButton: {
+          text: "OK",
+          onPress: () => setModalVisible(false),
+        },
+      });
+      return;
+    }
+
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then(() => {
@@ -97,12 +152,36 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     console.log("Google Sign-In pressed");
+
+    // Show info modal for Google Sign-In
+    showModal({
+      title: "Google Sign-In",
+      message:
+        "Google Sign-In feature is coming soon! Please use email and password for now.",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
+
     // await promptAsync();
   };
 
   const handleFacebookSignIn = () => {
     console.log("Facebook Sign-In pressed");
-    //todo: Implement Facebook Sign-In
+
+    // Show info modal for Facebook Sign-In
+    showModal({
+      title: "Facebook Sign-In",
+      message:
+        "Facebook Sign-In feature is coming soon! Please use email and password for now.",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
   };
 
   const emailRef = useRef<TextInput>(null);
@@ -134,7 +213,10 @@ export default function LoginScreen() {
             placeholder="Email"
             placeholderTextColor={COLORS.textSecondary}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (emailError) setEmailError(""); // Clear error when user starts typing
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             returnKeyType="next"
@@ -150,7 +232,10 @@ export default function LoginScreen() {
               placeholder="Password"
               placeholderTextColor={COLORS.textSecondary}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (passwordError) setPasswordError(""); // Clear error when user starts typing
+              }}
               secureTextEntry={!showPassword}
               returnKeyType="done"
               onSubmitEditing={handleLogin}
@@ -194,7 +279,7 @@ export default function LoginScreen() {
 
           {/* <Text style={styles.orLoginText}>OR</Text> */}
 
-          <View style={styles.buttonContainer}>
+          {/* <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.googleButton]}
               onPress={handleGoogleSignIn}
@@ -216,8 +301,18 @@ export default function LoginScreen() {
                 color="#1877F2"
               />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </LinearGradient>
+
+        <AlertModal
+          visible={modalVisible}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          type={modalConfig.type}
+          onClose={() => setModalVisible(false)}
+          primaryButton={modalConfig.primaryButton}
+          secondaryButton={modalConfig.secondaryButton}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -228,6 +323,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: scale(20),
     justifyContent: "center",
+    marginTop: verticalScale(20),
   },
   logoContainer: {
     alignItems: "center",

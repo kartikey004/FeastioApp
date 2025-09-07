@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 
+import AlertModal from "@/components/AlertModal";
 import { COLORS } from "@/utils/stylesheet";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { Colors } from "../constants/Colors";
@@ -38,6 +39,19 @@ export default function SignupScreen() {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info" as "success" | "error" | "warning" | "info",
+    primaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+    secondaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+  });
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading, error, userId, isOtpSent } = useAppSelector(
@@ -52,25 +66,27 @@ export default function SignupScreen() {
   //   scopes: ["profile", "email"],
   // });
 
-  // useEffect(() => {
-  //   if (response?.type === "success") {
-  //     const accessToken = response.authentication?.accessToken;
-  //     if (accessToken) {
-  //       dispatch(googleSignIn(accessToken));
-  //     }
-  //   } else if (response?.type === "error") {
-  //     console.log("Google Auth error:", response.error);
-  //   }
-  // }, [dispatch, response]);
+  useEffect(() => {
+    if (error) {
+      showModal({
+        title: "Sign Up Failed",
+        message: error || "An unexpected error occurred. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
+    }
+  }, [error]);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     router.replace("/personalizationScreen");
-  //   }
-  // }, [user, router]);
+  const showModal = (
+    config: Partial<typeof modalConfig> & { message: string }
+  ) => {
+    setModalConfig({ ...modalConfig, ...config });
+    setModalVisible(true);
+  };
 
-  // Email validation
-  // Email validation
   const handleEmailChange = (value: string) => {
     setEmail(value);
     if (!value) {
@@ -144,8 +160,26 @@ export default function SignupScreen() {
       confirmPassword,
     });
 
-    if (!name || !email || !phoneNumber || !password || !confirmPassword) {
-      console.log("All fields are required");
+    if (
+      !name ||
+      !email ||
+      !phoneNumber ||
+      !password ||
+      !confirmPassword ||
+      !/\S+@\S+\.\S+/.test(email) ||
+      phoneNumber.length < 10 ||
+      password.length < 6
+    ) {
+      showModal({
+        title: "Validation Error",
+        message:
+          "Please check all fields and ensure they are filled correctly.",
+        type: "warning",
+        primaryButton: {
+          text: "OK",
+          onPress: () => setModalVisible(false),
+        },
+      });
       return;
     }
 
@@ -172,19 +206,61 @@ export default function SignupScreen() {
       })
       .catch((err) => {
         console.log("Registration failed:", err);
+        const errorMessage =
+          err?.message ||
+          "An unexpected error occurred while creating your account. Please try again.";
+
+        showModal({
+          title: "Registration Failed",
+          message: errorMessage,
+          type: "error",
+          primaryButton: {
+            text: "Try Again",
+            onPress: () => setModalVisible(false),
+          },
+          // secondaryButton: {
+          //   text: "Contact Support",
+          //   onPress: () => {
+          //     setModalVisible(false);
+          //     // Optional: Navigate to support screen or open email client
+          //     // router.push("/support");
+          //   },
+          // },
+        });
       });
   };
 
   const handleGoogleSignUp = async () => {
-    // if (request) {
-    //   await promptAsync();
-    // } else {
-    //   console.log("Google Auth request not ready");
-    // }
+    console.log("Google Sign-Up pressed");
+
+    // Show info modal for Google Sign-In
+    showModal({
+      title: "Google Sign-Up",
+      message:
+        "Google Sign-Up feature is coming soon! Please use email and password for now.",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
+    // await promptAsync();
   };
 
   const handleFacebookSignUp = () => {
-    console.log("Facebook signup clicked");
+    console.log("Facebook Sign-Up pressed");
+
+    // Show info modal for Facebook Sign-In
+    showModal({
+      title: "Facebook Sign-Up",
+      message:
+        "Facebook Sign-Up feature is coming soon! Please use email and password for now.",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
   };
 
   const emailRef = useRef<TextInput>(null);
@@ -337,9 +413,7 @@ export default function SignupScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Social Signup */}
-            {/* <Text style={styles.orText}>OR</Text> */}
-            <View style={styles.buttonContainer}>
+            {/* <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={[styles.button, styles.googleButton]}
                 onPress={handleGoogleSignUp}
@@ -353,8 +427,18 @@ export default function SignupScreen() {
               >
                 <Ionicons name="logo-facebook" size={40} color="#1877F2" />
               </TouchableOpacity>
-            </View>
+            </View> */}
           </LinearGradient>
+
+          <AlertModal
+            visible={modalVisible}
+            title={modalConfig.title}
+            message={modalConfig.message}
+            type={modalConfig.type}
+            onClose={() => setModalVisible(false)}
+            primaryButton={modalConfig.primaryButton}
+            secondaryButton={modalConfig.secondaryButton}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

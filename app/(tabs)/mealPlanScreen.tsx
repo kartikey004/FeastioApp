@@ -1,3 +1,4 @@
+import AlertModal from "@/components/AlertModal";
 import { AppDispatch, RootState } from "@/redux/store";
 import {
   fetchMealPlans,
@@ -8,10 +9,10 @@ import { Day, MealType } from "@/utils/types";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -52,10 +53,39 @@ const MealPlanScreen = () => {
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(
     null
   );
+  const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setAlertModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info" as "success" | "error" | "warning" | "info",
+    primaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+    secondaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+  });
 
   useEffect(() => {
     handleFetchMealPlans();
   }, []);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await handleFetchMealPlans();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const showModal = (
+    config: Partial<typeof modalConfig> & { message: string }
+  ) => {
+    setModalConfig({ ...modalConfig, ...config });
+    setAlertModalVisible(true);
+  };
 
   const openAddEditMealModal = (mode: "add" | "edit", mealType?: string) => {
     setModalMode(mode);
@@ -75,12 +105,30 @@ const MealPlanScreen = () => {
 
   const handleUpdateMeal = async () => {
     if (!editingRecipeTitle.trim()) {
-      Alert.alert("Validation", "Please enter recipe title");
+      // Alert.alert("Validation", "Please enter recipe title");
+      showModal({
+        title: "Validation",
+        message: "Please enter recipe title.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setAlertModalVisible(false),
+        },
+      });
       return;
     }
 
     if (!selectedDay || !selectedMealType) {
-      Alert.alert("Error", "No day/meal selected");
+      // Alert.alert("Error", "No day/meal selected");
+      showModal({
+        title: "Error",
+        message: "No day/meal selected.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setAlertModalVisible(false),
+        },
+      });
       return;
     }
 
@@ -108,7 +156,16 @@ const MealPlanScreen = () => {
       await dispatch(fetchMealPlans()).unwrap();
     } catch (err: any) {
       console.error("Failed to update meal:", err);
-      Alert.alert("Error", err || "Failed to update meal plan");
+      // Alert.alert("Error", err || "Failed to update meal plan");
+      showModal({
+        title: "Error",
+        message: err || "An unexpected error occurred. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setAlertModalVisible(false),
+        },
+      });
     }
   };
 
@@ -136,7 +193,16 @@ const MealPlanScreen = () => {
       })
       .catch((err) => {
         console.error("❌ Failed to fetch meal plans:", err);
-        Alert.alert("Error", "Failed to fetch meal plans. Please try again.");
+        // Alert.alert("Error", "Failed to fetch meal plans. Please try again.");
+        showModal({
+          title: "Error",
+          message: "Failed to fetch meal plans. Please try again.",
+          type: "error",
+          primaryButton: {
+            text: "Try Again",
+            onPress: () => setAlertModalVisible(false),
+          },
+        });
       });
   };
 
@@ -170,6 +236,14 @@ const MealPlanScreen = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
         style={styles.scrollContainer}
       >
         <View style={styles.weekContainer}>
@@ -214,11 +288,21 @@ const MealPlanScreen = () => {
             <TouchableOpacity
               style={styles.quickAddButton}
               onPress={() =>
-                Alert.alert(
-                  "Feature Coming Soon",
-                  "The 'Add Meal' feature will be upgraded in the next updates.\nStay tuned!",
-                  [{ text: "OK", onPress: () => console.log("Alert closed") }]
-                )
+                // Alert.alert(
+                //   "Feature Coming Soon",
+                //   "The 'Add Meal' feature will be upgraded in the next updates.\nStay tuned!",
+                //   [{ text: "OK", onPress: () => console.log("Alert closed") }]
+                // )
+                showModal({
+                  title: "Feature Coming Soon",
+                  message:
+                    "The 'Add Meal' feature will be upgraded in the next updates.\nStay tuned!",
+                  type: "info",
+                  primaryButton: {
+                    text: "OK",
+                    onPress: () => setAlertModalVisible(false),
+                  },
+                })
               }
             >
               <Text style={styles.quickAddText}>+ Add Meal</Text>
@@ -236,16 +320,26 @@ const MealPlanScreen = () => {
                 <TouchableOpacity
                   style={styles.emptyStateButton}
                   onPress={() =>
-                    Alert.alert(
-                      "Feature Coming Soon",
-                      "Try generating meal again. This feature will be upgraded in the next update.\nStay tuned!",
-                      [
-                        {
-                          text: "OK",
-                          onPress: () => console.log("Alert closed"),
-                        },
-                      ]
-                    )
+                    // Alert.alert(
+                    //   "Feature Coming Soon",
+                    //   "Try generating meal again. This feature will be upgraded in the next update.\nStay tuned!",
+                    //   [
+                    //     {
+                    //       text: "OK",
+                    //       onPress: () => console.log("Alert closed"),
+                    //     },
+                    //   ]
+                    // )
+                    showModal({
+                      title: "Feature Coming Soon",
+                      message:
+                        "Try generating meal again. This feature will be upgraded in the next update.\nStay tuned!",
+                      type: "info",
+                      primaryButton: {
+                        text: "OK",
+                        onPress: () => setAlertModalVisible(false),
+                      },
+                    })
                   }
                 >
                   <Text style={styles.emptyStateButtonText}>
@@ -301,16 +395,27 @@ const MealPlanScreen = () => {
                         <TouchableOpacity
                           style={styles.noMealsAddButton}
                           onPress={() =>
-                            Alert.alert(
-                              "Feature Coming Soon",
-                              "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
-                              [
-                                {
-                                  text: "OK",
-                                  onPress: () => console.log("Alert closed"),
-                                },
-                              ]
-                            )
+                            // Alert.alert(
+                            //   "Feature Coming Soon",
+                            //   "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
+                            //   [
+                            //     {
+                            //       text: "OK",
+                            //       onPress: () => console.log("Alert closed"),
+                            //     },
+                            //   ]
+                            // )
+
+                            showModal({
+                              title: "Feature Coming Soon",
+                              message:
+                                "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
+                              type: "info",
+                              primaryButton: {
+                                text: "OK",
+                                onPress: () => setAlertModalVisible(false),
+                              },
+                            })
                           }
                         >
                           <Text style={styles.noMealsAddButtonText}>
@@ -503,16 +608,27 @@ const MealPlanScreen = () => {
                         <TouchableOpacity
                           style={styles.addMealTimelineItem}
                           onPress={() =>
-                            Alert.alert(
-                              "Feature Coming Soon",
-                              "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
-                              [
-                                {
-                                  text: "OK",
-                                  onPress: () => console.log("Alert closed"),
-                                },
-                              ]
-                            )
+                            // Alert.alert(
+                            //   "Feature Coming Soon",
+                            //   "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
+                            //   [
+                            //     {
+                            //       text: "OK",
+                            //       onPress: () => console.log("Alert closed"),
+                            //     },
+                            //   ]
+                            // )
+
+                            showModal({
+                              title: "Feature Coming Soon",
+                              message:
+                                "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
+                              type: "info",
+                              primaryButton: {
+                                text: "OK",
+                                onPress: () => setAlertModalVisible(false),
+                              },
+                            })
                           }
                         >
                           <View style={styles.addMealDot}>
@@ -553,7 +669,7 @@ const MealPlanScreen = () => {
                 <View style={styles.modalBox}>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>
-                      {modalMode === "add" ? "Add New Meal" : "Edit Meal"}
+                      {modalMode === "add" ? "Edit Meal" : "Edit Meal"}
                     </Text>
                     <TouchableOpacity
                       style={styles.closeButton}
@@ -619,6 +735,16 @@ const MealPlanScreen = () => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      <AlertModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onClose={() => setModalVisible(false)}
+        primaryButton={modalConfig.primaryButton}
+        secondaryButton={modalConfig.secondaryButton}
+      />
     </View>
   );
 };

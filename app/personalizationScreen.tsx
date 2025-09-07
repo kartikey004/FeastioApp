@@ -866,9 +866,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   generateButton: {
-    borderRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 32,
+    borderRadius: 16,
+    paddingVertical: 16,
+    // paddingHorizontal: 10,
     backgroundColor: COLORS.primary,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 8 },
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 15,
   },
   modalContentSimple: {
     width: "100%",

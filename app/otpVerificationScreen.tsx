@@ -1,10 +1,10 @@
+import AlertModal from "@/components/AlertModal";
 import { resendOTP, verifyOTP } from "@/redux/thunks/authThunks";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -56,6 +56,19 @@ export default function OtpVerificationScreen() {
   const [canResend, setCanResend] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info" as "success" | "error" | "warning" | "info",
+    primaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+    secondaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+  });
+
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const shakeAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(0)).current;
@@ -84,6 +97,27 @@ export default function OtpVerificationScreen() {
       if (interval) clearInterval(interval);
     };
   }, [timeLeft, canResend]);
+
+  useEffect(() => {
+    if (error) {
+      showModal({
+        title: "Verification Failed",
+        message: error || "An unexpected error occurred. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
+    }
+  }, [error]);
+
+  const showModal = (
+    config: Partial<typeof modalConfig> & { message: string }
+  ) => {
+    setModalConfig({ ...modalConfig, ...config });
+    setModalVisible(true);
+  };
 
   const handleOtpChange = (value: string, index: number) => {
     // Only allow numbers
@@ -116,7 +150,16 @@ export default function OtpVerificationScreen() {
   const handleVerifyOTP = (otpString: string = otp.join("")) => {
     if (otpString.length !== 6) {
       shakeInputs();
-      Alert.alert("Invalid OTP", "Please enter all 6 digits");
+      // Alert.alert("Invalid OTP", "Please enter all 6 digits");
+      showModal({
+        title: "Invalid OTP",
+        message: "Please enter all 6 digits.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
       return;
     }
 
@@ -154,7 +197,7 @@ export default function OtpVerificationScreen() {
         shakeInputs();
         clearOtp();
         Vibration.vibrate(200);
-        Alert.alert("Invalid OTP", "Please check your OTP and try again");
+        // Alert.alert("Invalid OTP", "Please check your OTP and try again");
       })
       .finally(() => {
         setIsVerifying(false);
@@ -173,13 +216,29 @@ export default function OtpVerificationScreen() {
       .unwrap()
       .then((res) => {
         console.log("OTP resent successfully:", res);
-        Alert.alert("OTP Sent", "A new OTP has been sent to your email");
+        showModal({
+          title: "OTP Sent",
+          message: "A new OTP has been sent to your email.",
+          type: "success",
+          primaryButton: {
+            text: "OK",
+            onPress: () => setModalVisible(false),
+          },
+        });
       })
       .catch((error) => {
         console.log("Resend OTP failed:", error);
         setCanResend(true);
         setTimeLeft(0);
-        Alert.alert("Error", "Failed to resend OTP. Please try again.");
+        showModal({
+          title: "Error",
+          message: "Failed to send OTP. Please try again.",
+          type: "error",
+          primaryButton: {
+            text: "Try Again",
+            onPress: () => setModalVisible(false),
+          },
+        });
       })
       .finally(() => {
         setResendLoading(false);
@@ -407,14 +466,26 @@ export default function OtpVerificationScreen() {
               </View>
 
               <Text style={styles.helpText}>
-                {" "}
                 Having trouble? Check your spam folder{"\n"}or contact support
-                at nutrisense.help@gmail.com{" "}
+                at{" "}
+                <Text style={{ fontWeight: "600", color: "#fff" }}>
+                  nutrisense.help@gmail.com
+                </Text>
               </Text>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
+
+      <AlertModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onClose={() => setModalVisible(false)}
+        primaryButton={modalConfig.primaryButton}
+        secondaryButton={modalConfig.secondaryButton}
+      />
     </SafeAreaView>
   );
 }
@@ -482,7 +553,7 @@ const styles = StyleSheet.create({
     // elevation: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
     color: COLORS.white,
     textAlign: "center",
@@ -498,10 +569,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   emailText: {
+    fontSize: 14,
     fontWeight: "600",
     color: COLORS.white,
   },
-
   otpContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -536,6 +607,7 @@ const styles = StyleSheet.create({
   },
   verifyButton: {
     paddingVertical: 18,
+    marginHorizontal: 12,
     borderRadius: 16,
     marginBottom: 22,
     shadowColor: "#000",
@@ -553,7 +625,7 @@ const styles = StyleSheet.create({
   verifyButtonText: {
     color: COLORS.primary,
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
     letterSpacing: 0.5,
   },
@@ -607,7 +679,7 @@ const styles = StyleSheet.create({
   },
   resendButton: {
     paddingVertical: 10,
-    paddingHorizontal: 2,
+    marginHorizontal: 2,
     borderRadius: 8,
   },
   resendButtonText: {
@@ -626,9 +698,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     backgroundColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
+    // marginLeft: 2,
   },
   timerText: {
     color: "rgba(255,255,255,0.8)",

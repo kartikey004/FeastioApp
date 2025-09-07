@@ -1,3 +1,4 @@
+import AlertModal from "@/components/AlertModal";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -25,10 +26,29 @@ const ProfileScreen: React.FC = () => {
   const { loading, error } = useSelector((state: RootState) => state.user);
   const [profileData, setProfileData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info" as "success" | "error" | "warning" | "info",
+    primaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+    secondaryButton: undefined as
+      | { text: string; onPress: () => void }
+      | undefined,
+  });
 
   useEffect(() => {
     loadProfile();
   }, []);
+
+  const showModal = (
+    config: Partial<typeof modalConfig> & { message: string }
+  ) => {
+    setModalConfig({ ...modalConfig, ...config });
+    setModalVisible(true);
+  };
 
   const loadProfile = async () => {
     try {
@@ -56,18 +76,36 @@ const ProfileScreen: React.FC = () => {
     //     },
     //   ]
     // );
-    console.log("Navigate to edit preferences");
+    // console.log("Navigate to edit preferences");
     router.push("/personalizationScreen");
   };
 
   const handleEditProfile = () => {
-    Alert.alert("Coming Soon", "This feature will be updated soon!");
-    console.log("Navigate to edit profile");
+    // Alert.alert("Coming Soon", "This feature will be updated soon!");
+    showModal({
+      title: "Feature Coming Soon",
+      message: "This feature will be upgraded in the next update. Stay tuned!",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
+    // console.log("Navigate to edit profile");
   };
 
   const handleSettings = () => {
-    Alert.alert("Coming Soon", "This feature will be updated soon!");
-    console.log("Navigate to settings");
+    // Alert.alert("Coming Soon", "This feature will be updated soon!");
+    showModal({
+      title: "Feature Coming Soon",
+      message: "This feature will be upgraded in the next update. Stay tuned!",
+      type: "info",
+      primaryButton: {
+        text: "OK",
+        onPress: () => setModalVisible(false),
+      },
+    });
+    // console.log("Navigate to settings");
   };
 
   const handleLogout = () => {
@@ -249,6 +287,16 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={modalVisible}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onClose={() => setModalVisible(false)}
+        primaryButton={modalConfig.primaryButton}
+        secondaryButton={modalConfig.secondaryButton}
+      />
     </SafeAreaView>
   );
 };
@@ -474,7 +522,7 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     paddingHorizontal: 20,
-    marginTop: 30,
+    marginTop: 20,
   },
   logoutButton: {
     flexDirection: "row",

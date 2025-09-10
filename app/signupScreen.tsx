@@ -292,7 +292,6 @@ export default function SignupScreen() {
               <Text style={styles.subtitle}>Sign up to start your journey</Text>
             </View>
 
-            {/* Full Name */}
             <TextInput
               style={styles.input}
               placeholder="Full Name"
@@ -459,6 +458,8 @@ const styles = StyleSheet.create({
   logo: {
     width: "90%",
     height: verticalScale(60),
+    // marginLeft: 10,
+    alignSelf: "center",
   },
   title: {
     fontSize: moderateScale(28),

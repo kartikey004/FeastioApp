@@ -605,7 +605,7 @@ const MealPlanScreen = () => {
                           );
                         })}
 
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                           style={styles.addMealTimelineItem}
                           onPress={() =>
                             // Alert.alert(
@@ -642,7 +642,7 @@ const MealPlanScreen = () => {
                               Snack, drink, or dessert
                             </Text>
                           </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                       </View>
                     )}
                   </View>
@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 16,
     elevation: 1,
-    marginBottom: 1,
+    marginBottom: 4,
   },
   planHeader: {
     flexDirection: "row",

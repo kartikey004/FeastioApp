@@ -167,3 +167,67 @@ export const logoutUser = createAsyncThunk<
     return rejectWithValue(errorMessage);
   }
 });
+
+export const forgotPassword = createAsyncThunk<
+  { userId: string; message: string },
+  { email: string },
+  { rejectValue: string }
+>("auth/forgotPassword", async ({ email }, { rejectWithValue }) => {
+  try {
+    const response = await api.post("/auth/forgot-password", { email });
+    return response.data; // { message, userId }
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Forgot password failed";
+    return rejectWithValue(errMsg);
+  }
+});
+
+export const resendForgotOTP = createAsyncThunk<
+  { message: string },
+  { email: string },
+  { rejectValue: string }
+>("auth/resendForgotOTP", async ({ email }, { rejectWithValue }) => {
+  try {
+    const response = await api.post("/auth/resend-forgot-otp", { email });
+    return response.data; // { message }
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Resend forgot OTP failed";
+    return rejectWithValue(errMsg);
+  }
+});
+
+export const resetPassword = createAsyncThunk<
+  BackendUser,
+  { email: string; otp: string; newPassword: string },
+  { rejectValue: string }
+>(
+  "auth/resetPassword",
+  async ({ email, otp, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/auth/reset-password", {
+        email,
+        otp,
+        newPassword,
+      });
+
+      const { accessToken, refreshToken, user } = response.data;
+
+      await saveTokens(accessToken, refreshToken);
+      await SecureStore.setItemAsync("userProfile", JSON.stringify(user));
+
+      return user;
+    } catch (error: any) {
+      const errMsg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Reset password failed";
+      return rejectWithValue(errMsg);
+    }
+  }
+);

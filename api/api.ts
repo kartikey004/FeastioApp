@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
 
 const api = axios.create({
-  baseURL: "http://10.200.121.101:5000/api",
+  baseURL: "http://192.168.31.215:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -46,7 +46,7 @@ api.interceptors.response.use(
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
-      console.log("NutriSense: Access token expired, refreshing...");
+      console.log("NUsense: Access token expired, refreshing...");
 
       const success = await refreshAccessToken();
 
@@ -67,26 +67,26 @@ api.interceptors.response.use(
 
 const refreshAccessToken = async () => {
   try {
-    console.log("NutriSense: Requesting new access token...");
+    console.log("NUsense: Requesting new access token...");
     const { refreshToken } = await getTokens();
     if (!refreshToken) return false;
 
     const response = await axios.post(
-      "http://10.200.121.101:5000/api/auth/refresh",
+      "http://192.168.31.215:5000/api/auth/refresh",
       { refreshToken },
       { headers: { "Content-Type": "application/json" } }
     );
     if (response.data.accessToken && response.data.refreshToken) {
       const { accessToken, refreshToken } = response.data;
       await saveTokens(accessToken, refreshToken);
-      console.log("NutriSense: New access token stored:", accessToken);
+      console.log("NUsense: New access token stored:", accessToken);
       return true;
     } else {
-      console.error("NutriSense: Refresh failed:", response.data.message);
+      console.error("NUsense: Refresh failed:", response.data.message);
       return "SESSION_EXPIRED";
     }
   } catch (error) {
-    console.error("NutriSense: Error refreshing token:", error);
+    console.error("NUsense: Error refreshing token:", error);
     return "SESSION_EXPIRED";
   }
 };

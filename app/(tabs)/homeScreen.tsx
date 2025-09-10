@@ -9,6 +9,7 @@ import {
   FlatList,
   Image,
   Linking,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,6 +33,7 @@ export default function HomeScreen() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const scrollRef = useRef<FlatList>(null);
 
   const todayTips = getTodayTips(tipCards, 5);
@@ -74,9 +76,14 @@ export default function HomeScreen() {
     setCurrentIndex(index);
   };
 
-  const handleAIAssistantPress = () => {
-    if (router && typeof router.push === "function") {
-      router.push("/aiAssistantScreen");
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await dispatch(getTodayMealPlanThunk()); // fetch latest meal plan
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -125,7 +132,19 @@ export default function HomeScreen() {
   const { meals, totalCalories, dailyNutritionalSummary } = todayMealPlan.data;
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]} // Android: progress indicator color
+            tintColor={COLORS.primary} // iOS: spinner color
+            title="Refreshing..." // optional
+            titleColor={COLORS.textSecondary}
+          />
+        }
+      >
         <View style={styles.headerWrapper}>
           <Image
             source={require("../../assets/images/nutrisenseLogo.png")}
@@ -306,7 +325,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     alignItems: "center",
-    marginVertical: verticalScale(10),
+    // marginVertical: verticalScale(5),
   },
   headerIcon: {
     width: "60%",
@@ -317,7 +336,6 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(14),
     marginBottom: verticalScale(20),
   },
-
   tipCard: {
     backgroundColor: COLORS.greyMint,
     borderRadius: scale(16),

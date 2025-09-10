@@ -3,13 +3,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
-  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -53,6 +50,7 @@ const ProfileScreen: React.FC = () => {
   const loadProfile = async () => {
     try {
       const result = await dispatch(fetchUserProfile()).unwrap();
+      console.log("Profile loaded successfully:", result);
       setProfileData(result);
     } catch (err) {
       console.error("Error loading profile:", err);
@@ -66,22 +64,10 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleEditPreferences = () => {
-    // Alert.alert(
-    //   "Feature Coming Soon",
-    //   "The 'Edit Preferences' feature will be upgraded in the next updates. Stay tuned!",
-    //   [
-    //     {
-    //       text: "OK",
-    //       onPress: () => console.log("Alert closed"),
-    //     },
-    //   ]
-    // );
-    // console.log("Navigate to edit preferences");
     router.push("/personalizationScreen");
   };
 
   const handleEditProfile = () => {
-    // Alert.alert("Coming Soon", "This feature will be updated soon!");
     showModal({
       title: "Feature Coming Soon",
       message: "This feature will be upgraded in the next update. Stay tuned!",
@@ -91,11 +77,9 @@ const ProfileScreen: React.FC = () => {
         onPress: () => setModalVisible(false),
       },
     });
-    // console.log("Navigate to edit profile");
   };
 
   const handleSettings = () => {
-    // Alert.alert("Coming Soon", "This feature will be updated soon!");
     showModal({
       title: "Feature Coming Soon",
       message: "This feature will be upgraded in the next update. Stay tuned!",
@@ -105,31 +89,31 @@ const ProfileScreen: React.FC = () => {
         onPress: () => setModalVisible(false),
       },
     });
-    // console.log("Navigate to settings");
   };
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
+    showModal({
+      title: "Confirm Logout",
+      message:
+        "Are you sure you want to log out? You'll need to sign in again to access your account.",
+      type: "error",
+      primaryButton: {
+        text: "Log Out",
         onPress: async () => {
           try {
-            // Dispatch logout thunk
             await dispatch(logoutUser()).unwrap();
-
-            // Navigate to login screen after successful logout
             router.replace("/loginScreen");
           } catch (error) {
             console.error("Logout error:", error);
-            // Even if logout API fails, user is logged out locally
-            // Navigate anyway for better UX
             router.replace("/loginScreen");
           }
         },
       },
-    ]);
+      secondaryButton: {
+        text: "Cancel",
+        onPress: () => setModalVisible(false),
+      },
+    });
   };
 
   const renderProfilePicture = () => {
@@ -153,24 +137,73 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const renderInfoCard = (title: string, items: string[], icon: string) => (
-    <View style={styles.infoCard}>
-      <View style={styles.cardHeader}>
-        <Ionicons name={icon as any} size={20} color={COLORS.primary} />
-        <Text style={styles.cardTitle}>{title}</Text>
+  // Safe rendering function for info cards
+  const renderInfoCard = (title: string, data: any, icon: string) => {
+    console.log(`Rendering card: ${title}`, data);
+
+    let displayItems: string[] = [];
+
+    // Handle different data types safely
+    if (Array.isArray(data)) {
+      displayItems = data.filter((item) => item != null && item !== "");
+    } else if (data != null && data !== "") {
+      displayItems = [String(data)];
+    }
+
+    return (
+      <View style={styles.infoCard}>
+        <View style={styles.cardHeader}>
+          <Ionicons name={icon as any} size={20} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>{title}</Text>
+        </View>
+        <View style={styles.cardContent}>
+          {displayItems.length > 0 ? (
+            displayItems.map((item, index) => (
+              <View key={`${title}-${index}`} style={styles.tagContainer}>
+                <Text style={styles.tagText}>{item}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>
+              No {title.toLowerCase()} added yet
+            </Text>
+          )}
+        </View>
       </View>
-      <View style={styles.cardContent}>
-        {items && items.length > 0 ? (
-          items.map((item, index) => (
-            <View key={index} style={styles.tagContainer}>
-              <Text style={styles.tagText}>{item}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.emptyText}>
-            No {title.toLowerCase()} added yet
-          </Text>
-        )}
+    );
+  };
+
+  const renderBasicInfoCard = () => (
+    <View style={styles.basicInfoCard}>
+      <View style={styles.cardHeader}>
+        <Ionicons name="person-outline" size={20} color={COLORS.primary} />
+        <Text style={styles.basicInfoCardTitle}>Basic Information</Text>
+      </View>
+      <View style={styles.basicInfoContent}>
+        <View style={styles.basicInfoRow}>
+          <View style={styles.basicInfoItem}>
+            <Text style={styles.basicInfoLabel}>Age</Text>
+            <Text style={styles.basicInfoValue}>
+              {profileData?.profile?.age || "Not set"}
+            </Text>
+          </View>
+          <View style={styles.basicInfoItem}>
+            <Text style={styles.basicInfoLabel}>Height</Text>
+            <Text style={styles.basicInfoValue}>
+              {profileData?.profile?.height
+                ? `${profileData.profile.height} cms`
+                : "Not set"}
+            </Text>
+          </View>
+          <View style={styles.basicInfoItem}>
+            <Text style={styles.basicInfoLabel}>Weight</Text>
+            <Text style={styles.basicInfoValue}>
+              {profileData?.profile?.weight
+                ? `${profileData.profile.weight} kgs`
+                : "Not set"}
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -179,11 +212,23 @@ const ProfileScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>
-          Hang tight!{"\n"}We’re setting up your profile...
+          Hang tight!{"\n"}We're setting up your profile...
         </Text>
       </View>
     );
   }
+
+  if (!profileData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>
+          No profile data available.{"\n"}Please try refreshing.
+        </Text>
+      </View>
+    );
+  }
+
+  console.log("Rendering ProfileScreen with data:", profileData);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -202,7 +247,7 @@ const ProfileScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Dashboard</Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={handleSettings}
             style={styles.settingsButton}
           >
@@ -211,7 +256,7 @@ const ProfileScreen: React.FC = () => {
               size={24}
               color={COLORS.textPrimary}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.profileCard}>
@@ -239,9 +284,11 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Basic Information Card */}
+        {renderBasicInfoCard()}
+
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Your Preferences</Text>
-          {/* <View style={styles.sectionLine} /> */}
           <TouchableOpacity
             style={styles.editPreferencesButton}
             onPress={handleEditPreferences}
@@ -255,12 +302,12 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.preferencesRow}>
             {renderInfoCard(
               "Dietary Restrictions",
-              profileData?.profile?.dietaryRestrictions || [],
+              profileData?.profile?.dietaryRestrictions,
               "nutrition-outline"
             )}
             {renderInfoCard(
               "Allergies",
-              profileData?.profile?.allergies || [],
+              profileData?.profile?.allergies,
               "medical-outline"
             )}
           </View>
@@ -268,22 +315,45 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.preferencesRow}>
             {renderInfoCard(
               "Health Goals",
-              profileData?.profile?.healthGoals || [],
+              profileData?.profile?.healthGoals,
               "fitness-outline"
             )}
             {renderInfoCard(
               "Cuisine Preferences",
-              profileData?.profile?.cuisinePreferences || [],
+              profileData?.profile?.cuisinePreferences,
               "restaurant-outline"
             )}
           </View>
+
+          <View style={styles.preferencesRow}>
+            {renderInfoCard(
+              "Activity Level",
+              profileData?.profile?.activityLevel,
+              "barbell-outline"
+            )}
+            {renderInfoCard(
+              "Health Conditions",
+              profileData?.profile?.healthConditions,
+              "heart-outline"
+            )}
+          </View>
+
+          {profileData?.profile?.menstrualHealth && (
+            <View style={styles.preferencesRow}>
+              {renderInfoCard(
+                "Menstrual Health",
+                profileData.profile.menstrualHealth,
+                "flower-outline"
+              )}
+              {/* <View style={styles.infoCard} /> */}
+            </View>
+          )}
         </View>
 
-        {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color={COLORS.white} />
-            <Text style={styles.logoutText}>Logout</Text>
+            <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -305,260 +375,262 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   contentContainer: {
-    paddingBottom: 30,
+    paddingVertical: 10,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: "#f5f5f5",
   },
   loadingText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
+    fontSize: 16,
     textAlign: "center",
+    color: COLORS.textSecondary || "#666",
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
-    paddingHorizontal: 20,
-    // paddingTop: 30,
-    paddingBottom: 20,
-    backgroundColor: COLORS.background,
+    paddingHorizontal: 26,
+    paddingVertical: 16,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.textPrimary || "#333",
   },
   settingsButton: {
     padding: 8,
-    borderRadius: 20,
-    // backgroundColor: COLORS.greyLight,
   },
   profileCard: {
-    backgroundColor: COLORS.cardBackground,
-    marginHorizontal: 20,
-    borderRadius: 20,
-    paddingTop: 24,
-    paddingBottom: 12,
-    paddingHorizontal: 12,
+    backgroundColor: COLORS.greyMint,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 22,
+    padding: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
     // elevation: 1,
-    marginBottom: 30,
   },
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 16,
   },
   profileImage: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 40,
     marginRight: 16,
   },
   profileImagePlaceholder: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 40,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primary || "#007bff",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
   profileImageText: {
     fontSize: 32,
-    fontWeight: "600",
-    color: COLORS.white,
+    fontWeight: "bold",
+    alignSelf: "center",
+    color: COLORS.white || "#fff",
   },
   profileInfo: {
     flex: 1,
   },
   username: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.textPrimary || "#333",
     marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.textSecondary || "#666",
     marginBottom: 2,
   },
   phone: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.textSecondary || "#666",
   },
   editButton: {
-    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 8,
+    width: "100%",
+    backgroundColor: COLORS.primary || "#007bff",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignSelf: "center",
   },
   editButtonText: {
-    color: COLORS.white,
+    color: COLORS.white || "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
+    alignSelf: "center",
+  },
+  basicInfoCardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textPrimary || "#333",
+    marginLeft: 6,
+  },
+  basicInfoCard: {
+    backgroundColor: COLORS.greyMint,
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    // elevation: 1,
+  },
+  basicInfoContent: {
+    marginTop: 12,
+  },
+  basicInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  basicInfoItem: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 8,
+  },
+  basicInfoLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary || "#666",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  basicInfoValue: {
     fontSize: 16,
     fontWeight: "600",
+    color: COLORS.textPrimary || "#333",
+    textAlign: "center",
   },
   sectionHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "space-evenly",
-    marginBottom: 20,
-    gap: 60,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    marginTop: 6,
   },
   sectionTitle: {
-    fontSize: 21,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 6,
     color: COLORS.textPrimary,
   },
-  sectionLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: 1,
-  },
   editPreferencesButton: {
-    backgroundColor: COLORS.primary,
     flexDirection: "row",
-    // alignItems: "center",
-    // justifyContent: ,
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
     paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    gap: 6,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    // elevation: 3,
+    borderRadius: 8,
+    marginRight: 10,
   },
   editPreferencesText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "600",
+    marginLeft: 4,
   },
   detailsContainer: {
-    paddingHorizontal: 24,
-    gap: 20,
+    paddingHorizontal: 14,
   },
   preferencesRow: {
     flexDirection: "row",
-    gap: 10,
+    marginBottom: 12,
   },
   infoCard: {
-    backgroundColor: COLORS.cardBackground,
-    borderRadius: 20,
-    padding: 15,
+    flex: 1,
+    backgroundColor: COLORS.greyMint,
+    borderRadius: 8,
+    padding: 12,
+    marginHorizontal: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    // elevation: 1,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.primary,
-    minHeight: 20,
-    maxWidth: "49%",
-    minWidth: "49%",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    // elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    gap: 8,
-  },
-  iconContainer: {
-    width: 22,
-    height: 22,
-    borderRadius: 16,
-    // backgroundColor: COLORS.accent,
-    // justifyContent: "flex-start",
-    // alignItems: "flex-start",
-    flexWrap: "wrap",
+    marginBottom: 8,
   },
   cardTitle: {
+    flex: 1,
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "600",
     color: COLORS.textPrimary,
-    // flex: 1,
+    marginLeft: 6,
+    flexWrap: "wrap",
+    flexShrink: 1,
   },
   cardContent: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
   },
   tagContainer: {
-    // backgroundColor: COLORS.accent,
-    paddingHorizontal: 2,
-    paddingVertical: 1,
-    borderRadius: 20,
-    alignItems: "center",
-    // borderWidth: 1,
-    // borderColor: COLORS.primaryLight,
+    backgroundColor: (COLORS.primary || "#007bff") + "15",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginRight: 6,
+    marginBottom: 4,
   },
   tagText: {
-    fontSize: 10,
-    color: COLORS.primary,
-    fontWeight: "800",
-    // alignItems: "center",
-    textAlignVertical: "center",
+    fontSize: 12,
+    color: COLORS.primary || "#007bff",
+    fontWeight: "500",
   },
   emptyText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
+    fontSize: 12,
+    color: COLORS.textSecondary || "#666",
     fontStyle: "italic",
   },
   actionButtons: {
-    paddingHorizontal: 20,
-    marginTop: 20,
+    paddingHorizontal: 16,
+    marginVertical: 10,
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: "#DC2626",
-    gap: 8,
+    backgroundColor: "#ff4757",
+    paddingVertical: 12,
+    borderRadius: 8,
   },
   logoutText: {
+    color: COLORS.white || "#fff",
     fontSize: 16,
-    color: COLORS.white,
-    fontWeight: "500",
-  },
-  errorContainer: {
-    margin: 20,
-    padding: 16,
-    backgroundColor: "#FFEBEE",
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#F44336",
-  },
-  errorText: {
-    fontSize: 14,
-    color: "#D32F2F",
-    marginBottom: 8,
-  },
-  dismissButton: {
-    alignSelf: "flex-start",
-  },
-  dismissText: {
-    fontSize: 14,
-    color: "#1976D2",
-    fontWeight: "500",
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });
 

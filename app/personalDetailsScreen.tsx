@@ -1,7 +1,8 @@
 import { AppDispatch } from "@/redux/store";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   FlatList,
   Image,
@@ -10,14 +11,18 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useDispatch } from "react-redux";
+import { generateMealPlan } from "../redux/thunks/mealPlanThunks";
+import { updateUserProfile } from "../redux/thunks/userThunks";
 import { COLORS } from "../utils/stylesheet";
 
 import AlertModal from "@/components/AlertModal";
+import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import downButton from "../assets/images/keyboard_arrow_down.png";
 import upButton from "../assets/images/keyboard_arrow_up.png";
 import logoImage from "../assets/images/nutrisenseLogo.png";
@@ -149,21 +154,41 @@ const DropdownModal: React.FC<DropdownModalProps> = React.memo(
   }
 );
 
-const PersonalizationScreen = () => {
+const PersonalDetailsScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const params = useLocalSearchParams();
 
-  const [dietModalVisible, setDietModalVisible] = useState(false);
-  const [cuisineModalVisible, setCuisineModalVisible] = useState(false);
-  const [goalsModalVisible, setGoalsModalVisible] = useState(false);
-  const [allergyModalVisible, setAllergyModalVisible] = useState(false);
+  // Get data from previous screen
+  const selectedDiet = (params.selectedDiet as string) || "";
+  const selectedAllergies = JSON.parse(
+    (params.selectedAllergies as string) || "[]"
+  );
+  const selectedGoals = JSON.parse((params.selectedGoals as string) || "[]");
+  const selectedCuisines = JSON.parse(
+    (params.selectedCuisines as string) || "[]"
+  );
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Modal states
+  const [genderModalVisible, setGenderModalVisible] = useState(false);
+  const [activityModalVisible, setActivityModalVisible] = useState(false);
+  const [healthConditionsModalVisible, setHealthConditionsModalVisible] =
+    useState(false);
+  const [menstrualModalVisible, setMenstrualModalVisible] = useState(false);
   const [modalAnim] = useState(new Animated.Value(0));
 
-  const [selectedDiet, setSelectedDiet] = useState("");
-  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
-
+  // Form states
+  const [selectedGender, setSelectedGender] = useState("");
+  const [age, setAge] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [selectedActivityLevel, setSelectedActivityLevel] = useState("");
+  const [selectedHealthConditions, setSelectedHealthConditions] = useState<
+    string[]
+  >([]);
+  const [selectedMenstrualHealth, setSelectedMenstrualHealth] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: "",
@@ -178,18 +203,34 @@ const PersonalizationScreen = () => {
   });
 
   const answered = useMemo(() => {
-    return [
-      selectedDiet,
-      selectedAllergies.length,
-      selectedGoals.length,
-      selectedCuisines.length,
+    const requiredFields = [
+      selectedGender,
+      age,
+      height,
+      weight,
+      selectedActivityLevel,
     ].filter(Boolean).length;
+
+    // Menstrual health is only required for females
+    const menstrualRequired =
+      selectedGender === "Female" ? (selectedMenstrualHealth ? 1 : 0) : 1;
+
+    return (
+      requiredFields +
+      menstrualRequired +
+      (selectedHealthConditions.length > 0 ? 1 : 0)
+    );
   }, [
-    selectedDiet,
-    selectedAllergies.length,
-    selectedGoals.length,
-    selectedCuisines.length,
+    selectedGender,
+    age,
+    height,
+    weight,
+    selectedActivityLevel,
+    selectedHealthConditions.length,
+    selectedMenstrualHealth,
   ]);
+
+  const totalQuestions = selectedGender === "Female" ? 7 : 6;
 
   const showModal = (
     config: Partial<typeof modalConfig> & { message: string }
@@ -228,21 +269,19 @@ const PersonalizationScreen = () => {
     []
   );
 
-  const handleContinueToPersonalDetails = useCallback(() => {
+  const handleCreateMealPlan = useCallback(async () => {
+    // Validate required fields
     if (
-      !selectedDiet ||
-      !selectedAllergies.length ||
-      !selectedGoals.length ||
-      !selectedCuisines.length
+      !selectedGender ||
+      !age ||
+      !height ||
+      !weight ||
+      !selectedActivityLevel ||
+      (selectedGender === "Female" && !selectedMenstrualHealth)
     ) {
-      // Alert.alert(
-      //   "Incomplete Information",
-      //   "Please answer all the questions to continue."
-      // );
-
       showModal({
         title: "Incomplete Information",
-        message: "Please answer all the questions to continue.",
+        message: "Please fill in all required fields to continue.",
         type: "error",
         primaryButton: {
           text: "Try Again",
@@ -252,98 +291,154 @@ const PersonalizationScreen = () => {
       return;
     }
 
-    // Navigate to personal details screen with current data
-    router.push({
-      pathname: "/personalDetailsScreen",
-      params: {
-        selectedDiet,
-        selectedAllergies: JSON.stringify(selectedAllergies),
-        selectedGoals: JSON.stringify(selectedGoals),
-        selectedCuisines: JSON.stringify(selectedCuisines),
-      },
-    });
+    setLoading(true);
+    setLoadingMessage("Creating Your Plan...");
+
+    // Change message after 10 seconds
+    const timer = setTimeout(() => {
+      setLoadingMessage("This might take a few seconds...");
+    }, 10000);
+
+    try {
+      console.log("Starting complete personalization...");
+
+      const profileData = {
+        // From previous screen
+        dietaryRestrictions: [selectedDiet],
+        allergies: selectedAllergies,
+        healthGoals: selectedGoals,
+        cuisinePreferences: selectedCuisines,
+        gender: selectedGender,
+        age: parseInt(age),
+        height: parseInt(height),
+        weight: parseInt(weight),
+        activityLevel: selectedActivityLevel,
+        healthConditions: selectedHealthConditions,
+        menstrualHealth:
+          selectedGender === "Female" ? selectedMenstrualHealth : undefined,
+      };
+
+      console.log("Profile data:", profileData);
+
+      console.log("➡️ Dispatching updateUserProfile...");
+      const updatedProfile = await dispatch(
+        updateUserProfile(profileData)
+      ).unwrap();
+      console.log("Profile updated:", updatedProfile);
+
+      console.log("➡️ Dispatching generateMealPlan...");
+      const mealPlan = await dispatch(
+        generateMealPlan({
+          ...profileData,
+          name: "Personal Menu",
+        })
+      ).unwrap();
+      console.log("✅ Meal plan generated:", mealPlan);
+
+      console.log("➡️ Navigating to /homeScreen...");
+      router.replace("/(tabs)/homeScreen");
+    } catch (err: any) {
+      console.error("Personalization failed:", err);
+      //   Alert.alert(
+      //     "Personalization Failed",
+      //     err?.response?.data?.error || err?.message || "Unexpected error."
+      //   );
+
+      showModal({
+        title: "Personalization Failed",
+        message:
+          err?.response?.data?.error ||
+          err?.message ||
+          "An unexpected error occurred. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
+    } finally {
+      console.log("Personalization process complete. Cleaning up states...");
+      clearTimeout(timer); // prevent message update if already done
+      setLoading(false);
+      setLoadingMessage(null);
+    }
   }, [
+    selectedGender,
+    age,
+    height,
+    weight,
+    selectedActivityLevel,
+    selectedHealthConditions,
+    selectedMenstrualHealth,
     selectedDiet,
     selectedAllergies,
     selectedGoals,
     selectedCuisines,
+    dispatch,
     router,
   ]);
 
-  const dietOptions = useMemo(
+  // Options arrays
+  const genderOptions = useMemo(
+    () => ["Male", "Female", "Other", "Prefer not to say"],
+    []
+  );
+
+  const activityOptions = useMemo(
     () => [
-      "No specific diet",
-      "Vegetarian",
-      "Vegan",
-      "Keto",
-      "Paleo",
-      "Mediterranean",
-      "Low-carb",
-      "Gluten-free",
-      "Intermittent fasting",
-      "Plant-based",
+      "Sedentary",
+      "Lightly Active",
+      "Moderately Active",
+      "Very Active",
+      "Athlete",
     ],
     []
   );
-  const allergyOptions = useMemo(
+
+  const healthConditionOptions = useMemo(
     () => [
-      "No allergies",
-      "Nuts",
-      "Dairy",
-      "Eggs",
-      "Gluten",
-      "Shellfish",
-      "Fish",
-      "Soy",
-      "Sesame",
+      "None",
+      "Diabetes",
+      "High Blood Pressure",
+      "Heart Disease",
+      "Thyroid Issues",
+      "PCOS",
+      "High Cholesterol",
+      "Food Intolerances",
+      "Digestive Issues",
       "Other",
     ],
     []
   );
-  const goalOptions = useMemo(
+
+  const menstrualOptions = useMemo(
     () => [
-      "Weight loss",
-      "Weight gain",
-      "Muscle building",
-      "General fitness",
-      "Improved energy",
-      "Better sleep",
-      "Heart health",
-      "Digestive health",
-      "Mental wellness",
-      "Athletic performance",
-    ],
-    []
-  );
-  const cuisineOptions = useMemo(
-    () => [
-      "Italian",
-      "Mexican",
-      "Chinese",
-      "Indian",
-      "Japanese",
-      "Mediterranean",
-      "Thai",
-      "American",
-      "French",
-      "Korean",
-      "Middle Eastern",
-      "Greek",
+      "Regular cycle",
+      "Irregular cycle",
+      "PCOS",
+      "Menopause / Perimenopause",
+      "Prefer not to say",
     ],
     []
   );
 
   const isButtonDisabled = useMemo(
     () =>
-      !selectedDiet ||
-      !selectedAllergies.length ||
-      !selectedGoals.length ||
-      !selectedCuisines.length,
+      !selectedGender ||
+      !age ||
+      !height ||
+      !weight ||
+      !selectedActivityLevel ||
+      (selectedGender === "Female" && !selectedMenstrualHealth) ||
+      loading,
     [
-      selectedDiet,
-      selectedAllergies.length,
-      selectedGoals.length,
-      selectedCuisines.length,
+      selectedGender,
+      age,
+      height,
+      weight,
+      selectedActivityLevel,
+      selectedMenstrualHealth,
+      loading,
     ]
   );
 
@@ -354,101 +449,214 @@ const PersonalizationScreen = () => {
 
         <View style={styles.titleContainer}>
           <Text style={styles.subtitle}>
-            Tell us about your preferences so we can create the perfect meal
-            plan for you
+            Now let's get your personal details to create the most accurate meal
+            plan
           </Text>
         </View>
 
         <View style={styles.progressContainer}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressText}>
-              {answered === 4 ? "All done!" : `Step ${answered + 1} of 4`}
+              {answered === totalQuestions
+                ? "All done!"
+                : `Step ${answered + 1} of ${totalQuestions}`}
             </Text>
             <Text style={styles.progressPercent}>
-              {Math.round((answered / 4) * 100)}%
+              {Math.round((answered / totalQuestions) * 100)}%
             </Text>
           </View>
           <View style={styles.progressBarBackground}>
             <Animated.View
               style={[
                 styles.progressBarFill,
-                { width: `${(answered / 4) * 100}%` },
+                { width: `${(answered / totalQuestions) * 100}%` },
               ]}
             />
           </View>
         </View>
       </View>
 
-      {/* Scrollable Content */}
       <ScrollView
         style={styles.questionsScroll}
         contentContainerStyle={styles.questionsScrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.questionsContainer}>
+          {/* Gender Selection */}
           <TouchableOpacity
-            onPress={() => openModal(setDietModalVisible)}
+            onPress={() => openModal(setGenderModalVisible)}
             style={[
               styles.questionCard,
-              selectedDiet && styles.questionCardSelected,
+              selectedGender && styles.questionCardSelected,
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Select dietary restrictions"
+            accessibilityLabel="Select gender"
           >
             <View style={styles.questionHeader}>
-              <View style={styles.questionIconContainer}></View>
               <View style={styles.questionContent}>
-                <Text style={styles.questionTitle}>Dietary Preferences</Text>
+                <Text style={styles.questionTitle}>Gender</Text>
                 <Text style={styles.questionSubtitle}>
-                  Do you follow any specific diet?
+                  This helps us personalize your nutrition
                 </Text>
               </View>
               <View style={styles.arrowContainer}>
                 <Image
-                  source={dietModalVisible ? upButton : downButton}
+                  source={genderModalVisible ? upButton : downButton}
                   style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
                 />
               </View>
             </View>
-            {selectedDiet && (
+            {selectedGender && (
               <View style={styles.selectedSection}>
                 <View style={styles.selectedBadge}>
-                  <Text style={styles.selectedBadgeText}>{selectedDiet}</Text>
+                  <Text style={styles.selectedBadgeText}>{selectedGender}</Text>
                 </View>
               </View>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => openModal(setAllergyModalVisible)}
-            style={[
-              styles.questionCard,
-              selectedAllergies.length > 0 && styles.questionCardSelected,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Select food allergies"
+          {/* Age Input */}
+          <View
+            style={[styles.questionCard, age && styles.questionCardSelected]}
           >
             <View style={styles.questionHeader}>
-              <View style={styles.questionIconContainer}></View>
               <View style={styles.questionContent}>
-                <Text style={styles.questionTitle}>Food Allergies</Text>
+                <Text style={styles.questionTitle}>Age</Text>
+                <Text style={styles.questionSubtitle}>How old are you?</Text>
+              </View>
+            </View>
+            <View style={styles.inputSection}>
+              <TextInput
+                style={styles.numberInput}
+                value={age}
+                onChangeText={setAge}
+                placeholder="Enter your age"
+                placeholderTextColor={COLORS.textSecondary}
+                keyboardType="numeric"
+                maxLength={3}
+              />
+              <Text style={styles.inputUnit}>years</Text>
+            </View>
+          </View>
+
+          {/* Height Input */}
+          <View
+            style={[styles.questionCard, height && styles.questionCardSelected]}
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Height</Text>
                 <Text style={styles.questionSubtitle}>
-                  Any ingredients to avoid?
+                  What's your height in centimeters?
+                </Text>
+              </View>
+            </View>
+            <View style={styles.inputSection}>
+              <TextInput
+                style={styles.numberInput}
+                value={height}
+                onChangeText={setHeight}
+                placeholder="Enter your height"
+                placeholderTextColor={COLORS.textSecondary}
+                keyboardType="numeric"
+                maxLength={3}
+              />
+              <Text style={styles.inputUnit}>cm</Text>
+            </View>
+          </View>
+
+          {/* Weight Input */}
+          <View
+            style={[styles.questionCard, weight && styles.questionCardSelected]}
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Weight</Text>
+                <Text style={styles.questionSubtitle}>
+                  What's your current weight in kilograms?
+                </Text>
+              </View>
+            </View>
+            <View style={styles.inputSection}>
+              <TextInput
+                style={styles.numberInput}
+                value={weight}
+                onChangeText={setWeight}
+                placeholder="Enter your weight"
+                placeholderTextColor={COLORS.textSecondary}
+                keyboardType="numeric"
+                maxLength={3}
+              />
+              <Text style={styles.inputUnit}>kg</Text>
+            </View>
+          </View>
+
+          {/* Activity Level */}
+          <TouchableOpacity
+            onPress={() => openModal(setActivityModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedActivityLevel && styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select activity level"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Activity Level</Text>
+                <Text style={styles.questionSubtitle}>
+                  How active are you typically?
                 </Text>
               </View>
               <View style={styles.arrowContainer}>
                 <Image
-                  source={allergyModalVisible ? upButton : downButton}
+                  source={activityModalVisible ? upButton : downButton}
                   style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
                 />
               </View>
             </View>
-            {selectedAllergies.length > 0 && (
+            {selectedActivityLevel && (
+              <View style={styles.selectedSection}>
+                <View style={styles.selectedBadge}>
+                  <Text style={styles.selectedBadgeText}>
+                    {selectedActivityLevel}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Health Conditions */}
+          <TouchableOpacity
+            onPress={() => openModal(setHealthConditionsModalVisible)}
+            style={[
+              styles.questionCard,
+              selectedHealthConditions.length > 0 &&
+                styles.questionCardSelected,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Select health conditions"
+          >
+            <View style={styles.questionHeader}>
+              <View style={styles.questionContent}>
+                <Text style={styles.questionTitle}>Health Conditions</Text>
+                <Text style={styles.questionSubtitle}>
+                  Any medical conditions we should know about? (Optional)
+                </Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Image
+                  source={healthConditionsModalVisible ? upButton : downButton}
+                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
+                />
+              </View>
+            </View>
+            {selectedHealthConditions.length > 0 && (
               <View style={styles.selectedSection}>
                 <View style={styles.selectedContainer}>
-                  {selectedAllergies.map((allergy, index) => (
+                  {selectedHealthConditions.map((condition, index) => (
                     <View key={index} style={styles.selectedChip}>
-                      <Text style={styles.selectedChipText}>{allergy}</Text>
+                      <Text style={styles.selectedChipText}>{condition}</Text>
                     </View>
                   ))}
                 </View>
@@ -456,153 +664,129 @@ const PersonalizationScreen = () => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => openModal(setGoalsModalVisible)}
-            style={[
-              styles.questionCard,
-              selectedGoals.length > 0 && styles.questionCardSelected,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Select health and fitness goals"
-          >
-            <View style={styles.questionHeader}>
-              <View style={styles.questionIconContainer}></View>
-              <View style={styles.questionContent}>
-                <Text style={styles.questionTitle}>Health Goals</Text>
-                <Text style={styles.questionSubtitle}>
-                  What are you working towards?
-                </Text>
-              </View>
-              <View style={styles.arrowContainer}>
-                <Image
-                  source={goalsModalVisible ? upButton : downButton}
-                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
-                />
-              </View>
-            </View>
-            {selectedGoals.length > 0 && (
-              <View style={styles.selectedSection}>
-                <View style={styles.selectedContainer}>
-                  {selectedGoals.map((goal, index) => (
-                    <View key={index} style={styles.selectedChip}>
-                      <Text style={styles.selectedChipText}>{goal}</Text>
-                    </View>
-                  ))}
+          {/* Menstrual Health - Only show for females */}
+          {selectedGender === "Female" && (
+            <TouchableOpacity
+              onPress={() => openModal(setMenstrualModalVisible)}
+              style={[
+                styles.questionCard,
+                selectedMenstrualHealth && styles.questionCardSelected,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Select menstrual health status"
+            >
+              <View style={styles.questionHeader}>
+                <View style={styles.questionContent}>
+                  <Text style={styles.questionTitle}>Menstrual Health</Text>
+                  <Text style={styles.questionSubtitle}>
+                    This helps us provide better nutrition recommendations
+                  </Text>
+                </View>
+                <View style={styles.arrowContainer}>
+                  <Image
+                    source={menstrualModalVisible ? upButton : downButton}
+                    style={[
+                      styles.arrowIcon,
+                      { tintColor: COLORS.textPrimary },
+                    ]}
+                  />
                 </View>
               </View>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => openModal(setCuisineModalVisible)}
-            style={[
-              styles.questionCard,
-              selectedCuisines.length > 0 && styles.questionCardSelected,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Select cuisine preferences"
-          >
-            <View style={styles.questionHeader}>
-              <View style={styles.questionIconContainer}></View>
-              <View style={styles.questionContent}>
-                <Text style={styles.questionTitle}>Favourite Cuisines</Text>
-                <Text style={styles.questionSubtitle}>
-                  What flavors do you love?
-                </Text>
-              </View>
-              <View style={styles.arrowContainer}>
-                <Image
-                  source={cuisineModalVisible ? upButton : downButton}
-                  style={[styles.arrowIcon, { tintColor: COLORS.textPrimary }]}
-                />
-              </View>
-            </View>
-            {selectedCuisines.length > 0 && (
-              <View style={styles.selectedSection}>
-                <View style={styles.selectedContainer}>
-                  {selectedCuisines.map((cuisine, index) => (
-                    <View key={index} style={styles.selectedChip}>
-                      <Text style={styles.selectedChipText}>{cuisine}</Text>
-                    </View>
-                  ))}
+              {selectedMenstrualHealth && (
+                <View style={styles.selectedSection}>
+                  <View style={styles.selectedBadge}>
+                    <Text style={styles.selectedBadgeText}>
+                      {selectedMenstrualHealth}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
-          </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            onPress={handleContinueToPersonalDetails}
+            onPress={handleCreateMealPlan}
             style={[
               styles.generateButton,
               isButtonDisabled && styles.generateButtonDisabled,
             ]}
             disabled={isButtonDisabled}
             accessibilityRole="button"
-            accessibilityLabel="Continue to personal details"
+            accessibilityLabel="Create meal plan"
           >
             <View style={styles.buttonContent}>
-              <Text style={styles.generateButtonText}>Continue</Text>
+              {loading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+              )}
+              <Text style={styles.generateButtonText}>
+                {loading ? loadingMessage : "Create Meal Plan"}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
+      {/* Modals */}
       <DropdownModal
-        visible={dietModalVisible}
-        setVisible={setDietModalVisible}
-        options={dietOptions}
-        selectedValue={selectedDiet}
-        setSelectedValue={setSelectedDiet}
+        visible={genderModalVisible}
+        setVisible={setGenderModalVisible}
+        options={genderOptions}
+        selectedValue={selectedGender}
+        setSelectedValue={setSelectedGender}
         isMultiSelect={false}
-        questionLabel="Dietary Preferences"
-        helperText="Choose the diet that best fits your lifestyle"
+        questionLabel="Gender"
+        helperText="Select your gender"
         modalAnim={modalAnim}
         closeModal={closeModal}
       />
 
       <DropdownModal
-        visible={allergyModalVisible}
-        setVisible={setAllergyModalVisible}
-        options={allergyOptions}
+        visible={activityModalVisible}
+        setVisible={setActivityModalVisible}
+        options={activityOptions}
+        selectedValue={selectedActivityLevel}
+        setSelectedValue={setSelectedActivityLevel}
+        isMultiSelect={false}
+        questionLabel="Activity Level"
+        helperText="Choose the option that best describes your typical activity"
+        modalAnim={modalAnim}
+        closeModal={closeModal}
+      />
+
+      <DropdownModal
+        visible={healthConditionsModalVisible}
+        setVisible={setHealthConditionsModalVisible}
+        options={healthConditionOptions}
         isMultiSelect={true}
-        selectedValues={selectedAllergies}
-        setSelectedValues={setSelectedAllergies}
-        questionLabel="Food Allergies"
-        helperText="Select all ingredients you need to avoid"
+        selectedValues={selectedHealthConditions}
+        setSelectedValues={setSelectedHealthConditions}
+        questionLabel="Health Conditions"
+        helperText="Select any conditions that apply to you"
         modalAnim={modalAnim}
         closeModal={closeModal}
         handleMultiSelect={handleMultiSelect}
       />
 
-      <DropdownModal
-        visible={goalsModalVisible}
-        setVisible={setGoalsModalVisible}
-        options={goalOptions}
-        isMultiSelect={true}
-        selectedValues={selectedGoals}
-        setSelectedValues={setSelectedGoals}
-        questionLabel="Health & Fitness Goals"
-        helperText="What would you like to achieve?"
-        modalAnim={modalAnim}
-        closeModal={closeModal}
-        handleMultiSelect={handleMultiSelect}
-      />
-
-      <DropdownModal
-        visible={cuisineModalVisible}
-        setVisible={setCuisineModalVisible}
-        options={cuisineOptions}
-        isMultiSelect={true}
-        selectedValues={selectedCuisines}
-        setSelectedValues={setSelectedCuisines}
-        questionLabel="Cuisine Preferences"
-        helperText="Pick the flavors you enjoy most"
-        modalAnim={modalAnim}
-        closeModal={closeModal}
-        handleMultiSelect={handleMultiSelect}
-      />
+      {selectedGender === "Female" && (
+        <DropdownModal
+          visible={menstrualModalVisible}
+          setVisible={setMenstrualModalVisible}
+          options={menstrualOptions}
+          selectedValue={selectedMenstrualHealth}
+          setSelectedValue={setSelectedMenstrualHealth}
+          isMultiSelect={false}
+          questionLabel="Menstrual Health"
+          helperText="This helps us provide personalized nutrition guidance"
+          modalAnim={modalAnim}
+          closeModal={closeModal}
+        />
+      )}
 
       <AlertModal
         visible={modalVisible}
@@ -617,9 +801,37 @@ const PersonalizationScreen = () => {
   );
 };
 
-export default PersonalizationScreen;
+// You'll need to add these additional styles to your existing stylesheet
+const additionalStyles = StyleSheet.create({
+  inputSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  numberInput: {
+    flex: 1,
+    height: 48,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.background,
+  },
+  inputUnit: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+  },
+});
 
+// Merge with existing styles (you'll need to add these to your actual stylesheet)
 const styles = StyleSheet.create({
+  // ... (include all existing styles from personalizationScreen)
+  // Plus the new additionalStyles abovecontainer: {
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -715,8 +927,7 @@ const styles = StyleSheet.create({
   questionCard: {
     backgroundColor: COLORS.cardBackground,
     borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -765,6 +976,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 20,
+  },
+
+  inputSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 36,
+    // paddingBottom: 6,
+    marginVertical: 10,
+  },
+  numberInput: {
+    height: verticalScale(35),
+    borderWidth: 1,
+    borderLeftWidth: 6,
+    borderTopLeftRadius: scale(10),
+    borderBottomLeftRadius: scale(10),
+    borderColor: COLORS.primaryDark,
+    borderRadius: scale(8),
+    paddingHorizontal: scale(22),
+    fontSize: moderateScale(14),
+    // marginTop: verticalScale(10),
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.white,
+  },
+  inputUnit: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+    // textAlign: "left",
   },
 
   // Selected Items
@@ -944,3 +1184,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+
+export default PersonalDetailsScreen;

@@ -43,7 +43,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
       case "success":
         return { name: "checkmark-circle", color: "#4CAF50" };
       case "error":
-        return { name: "close-circle", color: "#F44336" };
+        return { name: "close-circle", color: "#DB4437" };
       case "warning":
         return { name: "warning", color: "#FF9800" };
       default:

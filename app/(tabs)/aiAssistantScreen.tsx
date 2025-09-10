@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     borderBottomColor: COLORS.greyLight,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -181,13 +181,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sageEmoji: {
-    width: verticalScale(28),
-    height: verticalScale(28),
-    marginRight: 8,
+    width: verticalScale(24),
+    height: verticalScale(24),
+    marginRight: 10,
     resizeMode: "contain",
     color: COLORS.primary,
   },
-
   title: {
     fontSize: 24,
     fontWeight: "700",
@@ -196,6 +195,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: COLORS.textSecondary,
+    alignSelf: "center",
     fontWeight: "500",
   },
   messagesContainer: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderTopWidth: 1,
+    // borderTopWidth: 1,
     borderTopColor: COLORS.greyLight,
   },
   inputContainer: {

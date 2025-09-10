@@ -19,31 +19,19 @@ import {
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { Colors } from "../constants/Colors";
-import { loginUser } from "../redux/thunks/authThunks";
+import { forgotPassword, loginUser } from "../redux/thunks/authThunks";
 
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading, error, user } = useAppSelector((state) => state.auth);
-  // WebBrowser.maybeCompleteAuthSession();
-  // const makeRedirect = AuthSession.makeRedirectUri as unknown as (
-  //   opts: any
-  // ) => string;
-  // const redirectUri = makeRedirect({ useProxy: true });
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   clientId: Constants.expoConfig?.extra?.googleExpoClientId,
-  //   iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-  //   androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
-  //   webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-  //   redirectUri,
-  //   scopes: ["profile", "email"],
-  // } as any);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState({
@@ -150,6 +138,64 @@ export default function LoginScreen() {
       });
   };
 
+  const handleForgotPassword = async () => {
+    // router.push("/resetPasswordScreen");
+    if (!email) {
+      showModal({
+        title: "Email Required",
+        message:
+          "Please enter your email address first to reset your password.",
+        type: "warning",
+        primaryButton: { text: "OK", onPress: () => setModalVisible(false) },
+      });
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      showModal({
+        title: "Invalid Email",
+        message: "Please enter a valid email address.",
+        type: "error",
+        primaryButton: { text: "OK", onPress: () => setModalVisible(false) },
+      });
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+
+    try {
+      await dispatch(forgotPassword({ email })).unwrap();
+
+      setForgotPasswordLoading(false);
+      showModal({
+        title: "OTP Sent",
+        message: `An OTP has been sent to ${email}. Please check your inbox to continue resetting your password.`,
+        type: "success",
+        primaryButton: {
+          text: "Continue",
+          onPress: () => {
+            setModalVisible(false);
+            router.push({
+              pathname: "/resetPasswordScreen",
+              params: { email }, // pass email to next screen
+            });
+          },
+        },
+      });
+    } catch (error: any) {
+      setForgotPasswordLoading(false);
+      showModal({
+        title: "Reset Failed",
+        message: error || "Failed to send OTP. Please try again.",
+        type: "error",
+        primaryButton: {
+          text: "Try Again",
+          onPress: () => setModalVisible(false),
+        },
+      });
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     console.log("Google Sign-In pressed");
 
@@ -166,22 +212,6 @@ export default function LoginScreen() {
     });
 
     // await promptAsync();
-  };
-
-  const handleFacebookSignIn = () => {
-    console.log("Facebook Sign-In pressed");
-
-    // Show info modal for Facebook Sign-In
-    showModal({
-      title: "Facebook Sign-In",
-      message:
-        "Facebook Sign-In feature is coming soon! Please use email and password for now.",
-      type: "info",
-      primaryButton: {
-        text: "OK",
-        onPress: () => setModalVisible(false),
-      },
-    });
   };
 
   const emailRef = useRef<TextInput>(null);
@@ -220,7 +250,8 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             returnKeyType="next"
-            onSubmitEditing={() => emailRef.current?.focus()}
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            ref={emailRef}
           />
           {emailError ? (
             <Text style={styles.errorText}>{emailError}</Text>
@@ -239,6 +270,7 @@ export default function LoginScreen() {
               secureTextEntry={!showPassword}
               returnKeyType="done"
               onSubmitEditing={handleLogin}
+              ref={passwordRef}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
@@ -255,6 +287,26 @@ export default function LoginScreen() {
           {passwordError ? (
             <Text style={styles.errorText}>{passwordError}</Text>
           ) : null}
+
+          <View style={styles.forgotPasswordContainer}>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+              style={styles.forgotPasswordButton}
+            >
+              {forgotPasswordLoading ? (
+                <View style={styles.forgotPasswordLoadingContainer}>
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                  <Text style={styles.forgotPasswordTextLoading}>
+                    Sending...
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
             style={[styles.loginButton, loading && { opacity: 0.7 }]}
             onPress={handleLogin}
@@ -333,6 +385,7 @@ const styles = StyleSheet.create({
   logo: {
     width: "90%",
     height: verticalScale(60),
+    alignSelf: "center",
   },
   title: {
     fontSize: moderateScale(28),
@@ -454,6 +507,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 1,
     marginLeft: 10,
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  forgotPasswordContainer: {
+    alignItems: "flex-end",
+    // marginBottom: verticalScale(20),
+    marginTop: verticalScale(5),
+  },
+  forgotPasswordButton: {
+    // padding: moderateScale(5),
+  },
+  forgotPasswordText: {
+    color: COLORS.primary,
+    fontSize: moderateScale(14),
+    fontWeight: "600",
+    // textDecorationLine: "underline",
+  },
+  forgotPasswordLoadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: moderateScale(8),
+  },
+  forgotPasswordTextLoading: {
+    color: COLORS.primary,
+    fontSize: moderateScale(14),
+    fontWeight: "600",
   },
 });

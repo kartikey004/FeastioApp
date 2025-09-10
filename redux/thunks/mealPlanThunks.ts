@@ -102,11 +102,18 @@ export const updateMealPlan = createAsyncThunk<
 export const generateMealPlan = createAsyncThunk<
   MealPlan,
   {
-    dietaryRestrictions: string;
+    dietaryRestrictions: string[];
     allergies: string[];
     healthGoals: string[];
     cuisinePreferences: string[];
-    name: string; // meal plan name (e.g., "Weekly AI Plan")
+    gender: string;
+    age: number;
+    height: number;
+    weight: number;
+    activityLevel: string;
+    healthConditions: string[];
+    menstrualHealth?: string;
+    name: string;
   },
   { rejectValue: string }
 >("mealPlans/generate", async (preferences, { rejectWithValue }) => {
@@ -118,12 +125,8 @@ export const generateMealPlan = createAsyncThunk<
 
     const mealPlan: MealPlan = response.data;
 
-    console.log("Saving AI meal plan to DB...");
-    // const saveRes = await api.get("/mealPlans/get", {
-    //   name: preferences.name,
-    //   plan: mealPlan.plan,
-    //   totalNutritionalSummary: mealPlan.totalNutritionalSummary,
-    // });
+    // console.log("Saving AI meal plan to DB...");
+
     console.log("Meal plan saved:", response.data);
 
     // 3. Return saved MealPlan

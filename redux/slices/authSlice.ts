@@ -1,10 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
+  forgotPassword,
   googleSignIn,
   loginUser,
   logoutUser,
   registerUser,
+  resendForgotOTP,
   resendOTP,
+  resetPassword,
   verifyOTP,
 } from "../thunks/authThunks";
 
@@ -151,6 +154,57 @@ const authSlice = createSlice({
         state.user = null;
         state.userId = null;
         state.isOtpSent = false;
+        state.error = action.payload as string;
+      });
+    builder
+      .addCase(forgotPassword.pending, (state) => {
+        // state.loading = true;
+        state.error = null;
+        state.isOtpSent = false;
+      })
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userId = action.payload.userId;
+        state.isOtpSent = true;
+        state.successMessage =
+          "Password reset OTP sent to your email. Please verify to reset.";
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // 🔹 Resend Forgot OTP
+    builder
+      .addCase(resendForgotOTP.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendForgotOTP.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isOtpSent = true;
+        state.successMessage = action.payload.message;
+      })
+      .addCase(resendForgotOTP.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // 🔹 Reset Password
+    builder
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.userId = null;
+        state.isOtpSent = false;
+        state.successMessage = "Password reset successful. You are logged in.";
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload as string;
       });
   },

@@ -3,11 +3,18 @@ import * as SecureStore from "expo-secure-store";
 import api from "../../api/api";
 import { FetchedUserProfile } from "../slices/userSlice";
 
-interface UserProfilePayload {
-  dietaryRestrictions: string[];
-  allergies: string[];
-  healthGoals: string[];
-  cuisinePreferences: string[];
+export interface UserProfilePayload {
+  dietaryRestrictions?: string[];
+  allergies?: string[];
+  healthGoals?: string[];
+  cuisinePreferences?: string[];
+  gender?: string;
+  age?: number;
+  height?: number;
+  weight?: number;
+  activityLevel?: string;
+  healthConditions?: string[];
+  menstrualHealth?: string;
 }
 
 interface UserProfileResponse {
@@ -56,30 +63,20 @@ export const fetchUserProfile = createAsyncThunk<
       console.log("Using cached profile:", parsedData);
 
       // fetch fresh in background
-      api.get("/user/profile").then(async (res) => {
-        const freshData: FetchedUserProfile = res.data.data;
-        await SecureStore.setItemAsync(
-          "userProfile",
-          JSON.stringify(freshData)
-        );
-        console.log("Updated cache with fresh profile:", freshData);
+      const res = await api.get("/user/profile");
+      const freshData: FetchedUserProfile = res.data.data;
 
-        // update Redux immediately
-        dispatch({
-          type: "user/fetchUserProfile/fulfilled",
-          payload: freshData,
-        });
-      });
+      await SecureStore.setItemAsync("userProfile", JSON.stringify(freshData));
+      console.log("Updated cache with fresh profile:", freshData);
 
-      return parsedData;
+      // **return fresh data** so component updates automatically
+      return freshData;
     }
 
-    // ⬇️ No cache → force fresh profile fetch
     console.log("No cache found, fetching fresh profile...");
     const res = await api.get("/user/profile");
     const freshData: FetchedUserProfile = res.data.data;
 
-    // save & return
     await SecureStore.setItemAsync("userProfile", JSON.stringify(freshData));
     console.log("Fetched fresh profile:", freshData);
     return freshData;

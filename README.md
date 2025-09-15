@@ -1,50 +1,110 @@
-# Welcome to my Expo app 👋
+# Feastio: Smart Meal Planner
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Frontend application for **Feastio: Smart Meal Planner**, built with **Expo** and **React Native**, providing a seamless mobile experience for users.
 
-## Get started
+---
 
-1. Install dependencies
+## Table of Contents
 
-   ```bash
-   npm install
-   ```
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Folder Structure](#folder-structure)
+- [Setup and Installation](#setup-and-installation)
+- [Running the App](#running-the-app)
+- [Contact](#contact)
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Overview
 
-In the output, you'll find options to open the app in a
+FeastioApp is the cross-platform mobile frontend for the Feastio platform, built using **React Native** and **Expo**, with a backend powered by **Node.js**, **Express.js**, and **MongoDB**, and additional services via **Firebase**.  
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The app provides an AI-driven 7-day meal planning experience, offering users:  
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Complete meal plans with ingredients, cooking times, and detailed macronutrient breakdowns.  
+- Integration with the **Gemini API** for a conversational health and fitness assistant.  
+- Daily engagement features, including auto-refreshing nutrition tips (5 new tips every 10 seconds).  
+- Adaptive personalization based on diet preferences, allergies, and activity levels to ensure tailored recommendations.  
+- A dedicated **Menstrual Health** preferences section (Regular, Irregular, PCOS, Menopause) for female users, enabling inclusive and context-aware meal planning.  
+- Secure user access via **OTP email verification** using Nodemailer.  
 
-## Get a fresh project
+FeastioApp delivers a comprehensive, user-centric experience for managing nutrition, health, and wellness through AI-driven guidance and personalized meal recommendations.
 
-When you're ready, run:
+
+---
+
+## Tech Stack
+
+- **Framework**: Expo (React Native)
+- **Language**: JavaScript / TypeScript
+- **State Management**: Redux
+- **Navigation**: React Navigation
+- **API Client**: Axios or Fetch
+---
+
+## Folder Structure
 
 ```bash
-npm run reset-project
+FeastioApp/
+├── .vscode/           # VSCode workspace settings
+├── api/               # API service layer
+├── app/               # Main app entry point
+├── assets/            # Images, fonts, and other static assets
+├── components/        # Reusable UI components
+├── constants/         # Constant values and configurations
+├── hooks/             # Custom React hooks
+├── redux/             # Redux store and reducers
+├── scripts/           # Utility scripts
+├── utils/             # Helper functions
+├── .gitignore         # Git ignore rules
+├── app.config.js      # Expo app configuration
+├── declaration.d.ts   # TypeScript declarations
+├── eas.json           # Expo Application Services configuration
+├── eslint.config.js   # ESLint configuration
+├── package.json       # Project metadata and dependencies
+├── pnpm-lock.yaml     # pnpm lock file
+├── pnpm-workspace.yaml# pnpm workspace configuration
+├── tsconfig.json      # TypeScript configuration (if applicable)
+└── README.md          # Project documentation
+```
+---
+
+## Setup and Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/kartikey004/FeastioApp.git
+cd FeastioApp
+```
+---
+
+## Running the App
+
+For development:
+
+```bash
+npx expo start
+
+
+# Using pnpm
+pnpm install
+
+# Or using npm
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+For production:
 
-## Learn more
+```bash
+npx expo build:android
+npx expo build:ios
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Contact
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+For any questions, issues, or suggestions regarding this project, you can reach out to:
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Name**: Kartikey  
+- **Email**: kartikeym004@gmail.com
+- **GitHub**: [https://github.com/kartikey004](https://github.com/kartikey004)

@@ -19,36 +19,22 @@ export interface UserProfilePayload {
 
 interface UserProfileResponse {
   message: string;
-  profile: UserProfilePayload & { _id: string }; // backend sends back profile + _id
+  profile: UserProfilePayload & { _id: string };
 }
 
-// Update user profile
 export const updateUserProfile = createAsyncThunk<
-  UserProfileResponse, // response type
-  UserProfilePayload // payload type
+  UserProfileResponse,
+  UserProfilePayload
 >("user/updateProfile", async (profileData, { rejectWithValue }) => {
   try {
     const { data } = await api.put("/user/updateprofile", profileData);
-    return data; // { message, profile }
+    return data;
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message || "Failed to update profile"
     );
   }
 });
-
-// export interface UserProfile {
-//   email: string;
-//   username: string;
-//   phoneNumber?: string;
-//   profile: {
-//     dietaryRestrictions: string[];
-//     allergies: string[];
-//     healthGoals: string[];
-//     cuisinePreferences: string[];
-//   };
-//   profilePicture?: string; // URL or first letter
-// }
 
 export const fetchUserProfile = createAsyncThunk<
   FetchedUserProfile,
@@ -62,14 +48,12 @@ export const fetchUserProfile = createAsyncThunk<
       const parsedData: FetchedUserProfile = JSON.parse(cachedData);
       console.log("Using cached profile:", parsedData);
 
-      // fetch fresh in background
       const res = await api.get("/user/profile");
       const freshData: FetchedUserProfile = res.data.data;
 
       await SecureStore.setItemAsync("userProfile", JSON.stringify(freshData));
       console.log("Updated cache with fresh profile:", freshData);
 
-      // **return fresh data** so component updates automatically
       return freshData;
     }
 

@@ -43,7 +43,7 @@ const MealPlanScreen = () => {
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(
     todayIndex ? todayIndex - 1 : 6
-  ); // Adjusting for Sunday=0
+  );
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingMealType, setEditingMealType] = useState("");
@@ -99,10 +99,6 @@ const MealPlanScreen = () => {
     setModalVisible(true);
   };
 
-  const handleSaveMeal = () => {
-    //TODO
-  };
-
   const handleUpdateMeal = async () => {
     if (!editingRecipeTitle.trim()) {
       // Alert.alert("Validation", "Please enter recipe title");
@@ -133,7 +129,6 @@ const MealPlanScreen = () => {
     }
 
     try {
-      // Dispatch the updateMealPlan thunk
       await dispatch(
         updateMealPlan({
           day: selectedDay as Day,
@@ -147,12 +142,10 @@ const MealPlanScreen = () => {
         })
       ).unwrap();
 
-      // Close modal and clear input fields
       setModalVisible(false);
       setEditingRecipeTitle("");
       setEditingRecipeDescription("");
 
-      // Re-fetch meal plans to update UI
       await dispatch(fetchMealPlans()).unwrap();
     } catch (err: any) {
       console.error("Failed to update meal:", err);
@@ -173,27 +166,21 @@ const MealPlanScreen = () => {
     dispatch(fetchMealPlans())
       .unwrap()
       .then((plans) => {
-        console.log("✅ Meal plans fetched successfully (raw):", plans);
+        console.log("Meal plans fetched successfully (raw):", plans);
 
-        // 🔎 Pretty print the entire JSON
-        console.log(
-          "📦 Full Meal Plan JSON:\n",
-          JSON.stringify(plans, null, 2)
-        );
+        console.log("Full Meal Plan JSON:\n", JSON.stringify(plans, null, 2));
 
-        // If you only want to check the "plan" field of the first plan
         if (plans.length > 0) {
-          console.log("📅 Days in plan:", Object.keys(plans[0].plan || {}));
+          console.log("Days in plan:", Object.keys(plans[0].plan || {}));
           console.log(
-            "🍽️ Monday meals:",
+            "Monday meals:",
             JSON.stringify(plans[0].plan.Monday, null, 2)
           );
         }
         return plans;
       })
       .catch((err) => {
-        console.error("❌ Failed to fetch meal plans:", err);
-        // Alert.alert("Error", "Failed to fetch meal plans. Please try again.");
+        console.error("Failed to fetch meal plans:", err);
         showModal({
           title: "Error",
           message: "Failed to fetch meal plans. Please try again.",
@@ -283,31 +270,6 @@ const MealPlanScreen = () => {
         </View>
 
         <View style={styles.mealsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Plan</Text>
-            <TouchableOpacity
-              style={styles.quickAddButton}
-              onPress={() =>
-                // Alert.alert(
-                //   "Feature Coming Soon",
-                //   "The 'Add Meal' feature will be upgraded in the next updates.\nStay tuned!",
-                //   [{ text: "OK", onPress: () => console.log("Alert closed") }]
-                // )
-                showModal({
-                  title: "Feature Coming Soon",
-                  message:
-                    "The 'Add Meal' feature will be upgraded in the next updates.\nStay tuned!",
-                  type: "info",
-                  primaryButton: {
-                    text: "OK",
-                    onPress: () => setAlertModalVisible(false),
-                  },
-                })
-              }
-            >
-              <Text style={styles.quickAddText}>+ Add Meal</Text>
-            </TouchableOpacity>
-          </View>
           <View style={styles.mealCardsContainer}>
             {mealPlans.length === 0 ? (
               <View style={styles.emptyState}>
@@ -320,16 +282,6 @@ const MealPlanScreen = () => {
                 <TouchableOpacity
                   style={styles.emptyStateButton}
                   onPress={() =>
-                    // Alert.alert(
-                    //   "Feature Coming Soon",
-                    //   "Try generating meal again. This feature will be upgraded in the next update.\nStay tuned!",
-                    //   [
-                    //     {
-                    //       text: "OK",
-                    //       onPress: () => console.log("Alert closed"),
-                    //     },
-                    //   ]
-                    // )
                     showModal({
                       title: "Feature Coming Soon",
                       message:
@@ -348,7 +300,6 @@ const MealPlanScreen = () => {
                 </TouchableOpacity>
               </View>
             ) : (
-              // Loop through each meal plan
               mealPlans.map((plan: MealPlan) => {
                 const dayMeals =
                   plan.plan[weekDaysDisplay[selectedDayIndex]] || [];
@@ -361,29 +312,13 @@ const MealPlanScreen = () => {
                           {weekDaysDisplay[selectedDayIndex]} Schedule
                         </Text>
                       </View>
-                      <View style={styles.planHeaderRight}>
-                        {/* <View style={styles.mealCount}> */}
-                        {/* <Text style={styles.mealCountNumber}> */}
-                        {/* {dayMeals.length} */}
-                        {/* </Text> */}
-                        {/* <Text style={styles.mealCountLabel}>meals</Text> */}
-                        {/* </View> */}
-                        {/* <TouchableOpacity
-                          style={styles.planAddButton}
-                          onPress={() =>
-                            openAddEditMealModal("add", "Breakfast")
-                          }
-                        > */}
-                        {/* //   <Text style={styles.planAddButtonText}>+</Text>
-                        // </TouchableOpacity> */}
-                      </View>
+                      <View style={styles.planHeaderRight}></View>
                     </View>
 
                     {dayMeals.length === 0 ? (
                       <View style={styles.noMealsContainer}>
                         <View style={styles.noMealsIconContainer}>
                           <Text style={styles.noMealsIcon}>🍽️</Text>
-                          {/* <View style={styles.noMealsIconBg} /> */}
                         </View>
                         <Text style={styles.noMealsTitle}>
                           No meals planned
@@ -395,17 +330,6 @@ const MealPlanScreen = () => {
                         <TouchableOpacity
                           style={styles.noMealsAddButton}
                           onPress={() =>
-                            // Alert.alert(
-                            //   "Feature Coming Soon",
-                            //   "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
-                            //   [
-                            //     {
-                            //       text: "OK",
-                            //       onPress: () => console.log("Alert closed"),
-                            //     },
-                            //   ]
-                            // )
-
                             showModal({
                               title: "Feature Coming Soon",
                               message:
@@ -446,12 +370,6 @@ const MealPlanScreen = () => {
                               )}
 
                               <View style={styles.mealCardContent}>
-                                {/* <View style={styles.mealTimelineDot}> */}
-                                {/* <Text style={styles.mealTypeIcon}> */}
-                                {/* {getMealTypeIcon(meal.mealType)} */}
-                                {/* </Text> */}
-                                {/* </View> */}
-
                                 <View style={styles.mealCardBody}>
                                   <View style={styles.mealCardHeader}>
                                     <View style={styles.mealTypeContainer}>
@@ -470,11 +388,7 @@ const MealPlanScreen = () => {
                                       )}
                                       <TouchableOpacity
                                         style={styles.mealOptionsButton}
-                                      >
-                                        {/* <Text style={styles.mealOptionsText}>
-                                          ⋯
-                                        </Text> */}
-                                      </TouchableOpacity>
+                                      ></TouchableOpacity>
                                     </View>
                                   </View>
 
@@ -604,45 +518,6 @@ const MealPlanScreen = () => {
                             </TouchableOpacity>
                           );
                         })}
-
-                        {/* <TouchableOpacity
-                          style={styles.addMealTimelineItem}
-                          onPress={() =>
-                            // Alert.alert(
-                            //   "Feature Coming Soon",
-                            //   "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
-                            //   [
-                            //     {
-                            //       text: "OK",
-                            //       onPress: () => console.log("Alert closed"),
-                            //     },
-                            //   ]
-                            // )
-
-                            showModal({
-                              title: "Feature Coming Soon",
-                              message:
-                                "The 'Add Meal' feature will be upgraded in the next updates. Stay tuned!",
-                              type: "info",
-                              primaryButton: {
-                                text: "OK",
-                                onPress: () => setAlertModalVisible(false),
-                              },
-                            })
-                          }
-                        >
-                          <View style={styles.addMealDot}>
-                            <Text style={styles.addMealIcon}>+</Text>
-                          </View>
-                          <View style={styles.addMealContent}>
-                            <Text style={styles.addMealText}>
-                              Add another meal
-                            </Text>
-                            <Text style={styles.addMealSubtext}>
-                              Snack, drink, or dessert
-                            </Text>
-                          </View>
-                        </TouchableOpacity> */}
                       </View>
                     )}
                   </View>
@@ -839,12 +714,10 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     textAlign: "center",
   },
-
-  // Week Display Styles
   weekContainer: {
     marginTop: 20,
     // paddingTop: 10,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   weekDisplayContainer: {
     paddingHorizontal: 7,

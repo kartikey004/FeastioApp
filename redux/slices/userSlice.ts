@@ -1,4 +1,3 @@
-// userSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import * as SecureStore from "expo-secure-store";
 import { fetchUserProfile, updateUserProfile } from "../thunks/userThunks";
@@ -78,7 +77,7 @@ const userSlice = createSlice({
           action: PayloadAction<{ profile: UserProfile; message: string }>
         ) => {
           state.loading = false;
-          state.profile = action.payload.profile;
+          state.profile = action.payload.profile; // ← direct assignment
           state.successMessage = action.payload.message;
         }
       )
@@ -94,7 +93,6 @@ const userSlice = createSlice({
         fetchUserProfile.fulfilled,
         (state, action: PayloadAction<FetchedUserProfile>) => {
           state.loading = false;
-          // Save to SecureStore
           SecureStore.setItemAsync(
             "userProfile",
             JSON.stringify(action.payload)

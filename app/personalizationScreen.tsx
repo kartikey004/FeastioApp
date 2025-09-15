@@ -18,9 +18,9 @@ import { useDispatch } from "react-redux";
 import { COLORS } from "../utils/stylesheet";
 
 import AlertModal from "@/components/AlertModal";
+import logoImage from "../assets/images/feastioLogo.png";
 import downButton from "../assets/images/keyboard_arrow_down.png";
 import upButton from "../assets/images/keyboard_arrow_up.png";
-import logoImage from "../assets/images/nutrisenseLogo.png";
 
 interface DropdownModalProps {
   visible: boolean;
@@ -252,7 +252,6 @@ const PersonalizationScreen = () => {
       return;
     }
 
-    // Navigate to personal details screen with current data
     router.push({
       pathname: "/personalDetailsScreen",
       params: {
@@ -379,7 +378,6 @@ const PersonalizationScreen = () => {
         </View>
       </View>
 
-      {/* Scrollable Content */}
       <ScrollView
         style={styles.questionsScroll}
         contentContainerStyle={styles.questionsScrollContent}
@@ -626,7 +624,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  // Header Section
   headerSection: {
     paddingTop: 30,
     paddingBottom: 12,
@@ -699,7 +696,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // Questions Section
   questionsScroll: {
     flex: 1,
     marginTop: 8,
@@ -711,7 +707,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
 
-  // Question Cards
   questionCard: {
     backgroundColor: COLORS.cardBackground,
     borderRadius: 20,
@@ -735,7 +730,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Question Icon
   questionIconContainer: {
     marginRight: 16,
   },
@@ -750,7 +744,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 
-  // Question Content
   questionContent: {
     flex: 1,
   },
@@ -767,7 +760,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Selected Items
   selectedSection: {
     marginTop: 16,
     // paddingTop: 16,
@@ -803,7 +795,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // Arrow Icon
   arrowContainer: {
     marginLeft: 12,
     justifyContent: "center",
@@ -813,7 +804,6 @@ const styles = StyleSheet.create({
     height: 24,
   },
 
-  // Generate Button
   buttonContainer: {
     paddingTop: 32,
     paddingBottom: 20,
@@ -856,7 +846,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  // Modal Styles
   modalOverlaySimple: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

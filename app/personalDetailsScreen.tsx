@@ -23,9 +23,9 @@ import { COLORS } from "../utils/stylesheet";
 
 import AlertModal from "@/components/AlertModal";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+import logoImage from "../assets/images/feastioLogo.png";
 import downButton from "../assets/images/keyboard_arrow_down.png";
 import upButton from "../assets/images/keyboard_arrow_up.png";
-import logoImage from "../assets/images/nutrisenseLogo.png";
 
 interface DropdownModalProps {
   visible: boolean;
@@ -159,7 +159,6 @@ const PersonalDetailsScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useLocalSearchParams();
 
-  // Get data from previous screen
   const selectedDiet = (params.selectedDiet as string) || "";
   const selectedAllergies = JSON.parse(
     (params.selectedAllergies as string) || "[]"
@@ -171,7 +170,6 @@ const PersonalDetailsScreen = () => {
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Modal states
   const [genderModalVisible, setGenderModalVisible] = useState(false);
   const [activityModalVisible, setActivityModalVisible] = useState(false);
   const [healthConditionsModalVisible, setHealthConditionsModalVisible] =
@@ -179,7 +177,6 @@ const PersonalDetailsScreen = () => {
   const [menstrualModalVisible, setMenstrualModalVisible] = useState(false);
   const [modalAnim] = useState(new Animated.Value(0));
 
-  // Form states
   const [selectedGender, setSelectedGender] = useState("");
   const [age, setAge] = useState("");
   const [height, setHeight] = useState("");
@@ -211,9 +208,8 @@ const PersonalDetailsScreen = () => {
       selectedActivityLevel,
     ].filter(Boolean).length;
 
-    // Menstrual health is only required for females
     const menstrualRequired =
-      selectedGender === "Female" ? (selectedMenstrualHealth ? 1 : 0) : 1;
+      selectedGender === "Female" ? (selectedMenstrualHealth ? 1 : 0) : 0;
 
     return (
       requiredFields +
@@ -230,7 +226,11 @@ const PersonalDetailsScreen = () => {
     selectedMenstrualHealth,
   ]);
 
-  const totalQuestions = selectedGender === "Female" ? 7 : 6;
+  const totalQuestions = useMemo(() => {
+    const baseQuestions = 6;
+    const menstrualQuestion = selectedGender === "Female" ? 1 : 0;
+    return baseQuestions + menstrualQuestion;
+  }, [selectedGender]);
 
   const showModal = (
     config: Partial<typeof modalConfig> & { message: string }
@@ -270,7 +270,6 @@ const PersonalDetailsScreen = () => {
   );
 
   const handleCreateMealPlan = useCallback(async () => {
-    // Validate required fields
     if (
       !selectedGender ||
       !age ||
@@ -294,7 +293,6 @@ const PersonalDetailsScreen = () => {
     setLoading(true);
     setLoadingMessage("Creating Your Plan...");
 
-    // Change message after 10 seconds
     const timer = setTimeout(() => {
       setLoadingMessage("This might take a few seconds...");
     }, 10000);
@@ -303,7 +301,6 @@ const PersonalDetailsScreen = () => {
       console.log("Starting complete personalization...");
 
       const profileData = {
-        // From previous screen
         dietaryRestrictions: [selectedDiet],
         allergies: selectedAllergies,
         healthGoals: selectedGoals,
@@ -320,29 +317,25 @@ const PersonalDetailsScreen = () => {
 
       console.log("Profile data:", profileData);
 
-      console.log("➡️ Dispatching updateUserProfile...");
+      console.log("Dispatching updateUserProfile...");
       const updatedProfile = await dispatch(
         updateUserProfile(profileData)
       ).unwrap();
       console.log("Profile updated:", updatedProfile);
 
-      console.log("➡️ Dispatching generateMealPlan...");
+      console.log("Dispatching generateMealPlan...");
       const mealPlan = await dispatch(
         generateMealPlan({
           ...profileData,
           name: "Personal Menu",
         })
       ).unwrap();
-      console.log("✅ Meal plan generated:", mealPlan);
+      console.log("Meal plan generated:", mealPlan);
 
-      console.log("➡️ Navigating to /homeScreen...");
+      console.log("Navigating to /homeScreen...");
       router.replace("/(tabs)/homeScreen");
     } catch (err: any) {
       console.error("Personalization failed:", err);
-      //   Alert.alert(
-      //     "Personalization Failed",
-      //     err?.response?.data?.error || err?.message || "Unexpected error."
-      //   );
 
       showModal({
         title: "Personalization Failed",
@@ -358,7 +351,7 @@ const PersonalDetailsScreen = () => {
       });
     } finally {
       console.log("Personalization process complete. Cleaning up states...");
-      clearTimeout(timer); // prevent message update if already done
+      clearTimeout(timer);
       setLoading(false);
       setLoadingMessage(null);
     }
@@ -378,7 +371,6 @@ const PersonalDetailsScreen = () => {
     router,
   ]);
 
-  // Options arrays
   const genderOptions = useMemo(
     () => ["Male", "Female", "Other", "Prefer not to say"],
     []
@@ -459,7 +451,7 @@ const PersonalDetailsScreen = () => {
             <Text style={styles.progressText}>
               {answered === totalQuestions
                 ? "All done!"
-                : `Step ${answered + 1} of ${totalQuestions}`}
+                : `Step ${answered} of ${totalQuestions}`}
             </Text>
             <Text style={styles.progressPercent}>
               {Math.round((answered / totalQuestions) * 100)}%
@@ -482,7 +474,6 @@ const PersonalDetailsScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.questionsContainer}>
-          {/* Gender Selection */}
           <TouchableOpacity
             onPress={() => openModal(setGenderModalVisible)}
             style={[
@@ -515,7 +506,6 @@ const PersonalDetailsScreen = () => {
             )}
           </TouchableOpacity>
 
-          {/* Age Input */}
           <View
             style={[styles.questionCard, age && styles.questionCardSelected]}
           >
@@ -539,7 +529,6 @@ const PersonalDetailsScreen = () => {
             </View>
           </View>
 
-          {/* Height Input */}
           <View
             style={[styles.questionCard, height && styles.questionCardSelected]}
           >
@@ -561,11 +550,10 @@ const PersonalDetailsScreen = () => {
                 keyboardType="numeric"
                 maxLength={3}
               />
-              <Text style={styles.inputUnit}>cm</Text>
+              <Text style={styles.inputUnit}>cms</Text>
             </View>
           </View>
 
-          {/* Weight Input */}
           <View
             style={[styles.questionCard, weight && styles.questionCardSelected]}
           >
@@ -587,11 +575,10 @@ const PersonalDetailsScreen = () => {
                 keyboardType="numeric"
                 maxLength={3}
               />
-              <Text style={styles.inputUnit}>kg</Text>
+              <Text style={styles.inputUnit}>kgs</Text>
             </View>
           </View>
 
-          {/* Activity Level */}
           <TouchableOpacity
             onPress={() => openModal(setActivityModalVisible)}
             style={[
@@ -626,7 +613,6 @@ const PersonalDetailsScreen = () => {
             )}
           </TouchableOpacity>
 
-          {/* Health Conditions */}
           <TouchableOpacity
             onPress={() => openModal(setHealthConditionsModalVisible)}
             style={[
@@ -664,7 +650,6 @@ const PersonalDetailsScreen = () => {
             )}
           </TouchableOpacity>
 
-          {/* Menstrual Health - Only show for females */}
           {selectedGender === "Female" && (
             <TouchableOpacity
               onPress={() => openModal(setMenstrualModalVisible)}
@@ -732,7 +717,6 @@ const PersonalDetailsScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Modals */}
       <DropdownModal
         visible={genderModalVisible}
         setVisible={setGenderModalVisible}
@@ -801,51 +785,20 @@ const PersonalDetailsScreen = () => {
   );
 };
 
-// You'll need to add these additional styles to your existing stylesheet
-const additionalStyles = StyleSheet.create({
-  inputSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  numberInput: {
-    flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    backgroundColor: COLORS.background,
-  },
-  inputUnit: {
-    marginLeft: 12,
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    fontWeight: "500",
-  },
-});
-
-// Merge with existing styles (you'll need to add these to your actual stylesheet)
 const styles = StyleSheet.create({
-  // ... (include all existing styles from personalizationScreen)
-  // Plus the new additionalStyles abovecontainer: {
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
     paddingHorizontal: 20,
   },
 
-  // Header Section
   headerSection: {
     paddingTop: 30,
     paddingBottom: 12,
     alignItems: "center",
   },
   logoImage: {
-    width: "70%",
+    width: "60%",
     height: 60,
     marginBottom: 10,
     resizeMode: "contain",
@@ -911,7 +864,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // Questions Section
   questionsScroll: {
     flex: 1,
     marginTop: 8,
@@ -923,7 +875,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
 
-  // Question Cards
   questionCard: {
     backgroundColor: COLORS.cardBackground,
     borderRadius: 20,
@@ -946,7 +897,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Question Icon
   questionIconContainer: {
     marginRight: 16,
   },
@@ -961,7 +911,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 
-  // Question Content
   questionContent: {
     flex: 1,
   },
@@ -1000,14 +949,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   inputUnit: {
-    marginLeft: 12,
+    marginLeft: 6,
     fontSize: 16,
     color: COLORS.textSecondary,
     fontWeight: "500",
     // textAlign: "left",
   },
 
-  // Selected Items
   selectedSection: {
     marginTop: 16,
     // paddingTop: 16,
@@ -1043,7 +991,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // Arrow Icon
   arrowContainer: {
     marginLeft: 12,
     justifyContent: "center",
@@ -1053,7 +1000,6 @@ const styles = StyleSheet.create({
     height: 24,
   },
 
-  // Generate Button
   buttonContainer: {
     paddingTop: 32,
     paddingBottom: 20,
@@ -1070,7 +1016,7 @@ const styles = StyleSheet.create({
     // elevation: 8,
   },
   generateButtonDisabled: {
-    backgroundColor: COLORS.greyMedium,
+    backgroundColor: COLORS.primary,
     shadowOpacity: 0,
   },
   buttonContent: {
@@ -1096,7 +1042,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  // Modal Styles
   modalOverlaySimple: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

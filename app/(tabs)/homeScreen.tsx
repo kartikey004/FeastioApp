@@ -10,13 +10,13 @@ import {
   Image,
   Linking,
   RefreshControl,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { useDispatch, useSelector } from "react-redux";
 import { getTodayTips } from "../../utils/dashboardUtils";
@@ -62,7 +62,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!loading && todayMealPlan) {
-      // Add a small delay for smooth transition
       const timer = setTimeout(() => {
         setIsInitialLoading(false);
       }, 500);
@@ -79,7 +78,7 @@ export default function HomeScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await dispatch(getTodayMealPlanThunk()); // fetch latest meal plan
+      await dispatch(getTodayMealPlanThunk());
     } catch (err) {
       console.error(err);
     } finally {
@@ -96,12 +95,8 @@ export default function HomeScreen() {
   const renderMealCard = (mealType: any, mealData: any) => (
     <View key={mealType} style={styles.mealCard}>
       <View style={styles.mealHeader}>
-        {/* <View style={styles.mealIconContainer}> */}
-        {/* <Text style={styles.mealIcon}>{getMealIcon(mealType)}</Text> */}
-        {/* </View> */}
         <View style={styles.mealInfo}>
           <Text style={styles.mealType}>{mealType.toUpperCase()}</Text>
-          {/* <Text style={styles.mealTime}>{mealData.scheduledTime}</Text> */}
         </View>
         <View
           style={[
@@ -138,16 +133,16 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[COLORS.primary]} // Android: progress indicator color
-            tintColor={COLORS.primary} // iOS: spinner color
-            title="Refreshing..." // optional
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+            title="Refreshing..."
             titleColor={COLORS.textSecondary}
           />
         }
       >
         <View style={styles.headerWrapper}>
           <Image
-            source={require("../../assets/images/nutrisenseLogo.png")}
+            source={require("../../assets/images/feastioLogo.png")}
             style={styles.headerIcon}
             resizeMode="contain"
           />
@@ -155,15 +150,6 @@ export default function HomeScreen() {
 
         <View style={styles.tipsSection}>
           <FlatList
-            // getItemLayout={(data, index) => ({
-            //   length: screenWidth - 40,
-            //   offset: (screenWidth - 40) * index,
-            //   index,
-            // })}
-            // removeClippedSubviews={true}
-            // maxToRenderPerBatch={5}
-            // updateCellsBatchingPeriod={50}
-            // windowSize={10}
             ref={scrollRef}
             data={todayTips}
             keyExtractor={(item) => item.id.toString()}
@@ -172,10 +158,6 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={handleMomentumScrollEnd}
             scrollEventThrottle={16}
-            // snapToAlignment="center"
-            // snapToInterval={screenWidth}
-            // decelerationRate="fast"
-            // contentContainerStyle={{ marginHorizontal: 3 }}
             renderItem={({ item }) => (
               <View style={[styles.tipCard, { width: screenWidth - 40 }]}>
                 <View style={styles.tipImageContainer}>
@@ -267,7 +249,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.aiSection}>
-          {/* <Text style={styles.aiSectionTitle}>Sage AI Assistant</Text> */}
           <View style={styles.aiCard}>
             <View style={styles.aiContent}>
               <Text style={styles.aiTitle}>Sage AI Assistant</Text>
@@ -310,6 +291,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 12,
     backgroundColor: COLORS.background,
   },
   loaderContainer: {
@@ -325,13 +307,12 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     alignItems: "center",
-    // marginVertical: verticalScale(5),
+    marginTop: verticalScale(5),
   },
   headerIcon: {
-    width: "60%",
+    width: "80%",
     height: verticalScale(60),
   },
-  // Tips Section Styles
   tipsSection: {
     marginHorizontal: scale(14),
     marginBottom: verticalScale(20),
@@ -376,7 +357,7 @@ const styles = StyleSheet.create({
   },
 
   tipContent: {
-    // flex: 1, // Takes available space
+    // flex: 1,
   },
 
   tipTitle: {
@@ -392,10 +373,8 @@ const styles = StyleSheet.create({
     // marginBottom: verticalScale(10),
   },
   learnMoreButton: {
-    alignSelf: "flex-start", // Positions button to the right
-    // backgroundColor: COLORS.primary,
-    // paddingHorizontal: scale(16),
-    // paddingVertical: verticalScale(20),
+    alignSelf: "flex-start",
+
     borderRadius: scale(20),
     marginTop: verticalScale(10),
   },

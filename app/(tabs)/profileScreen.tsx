@@ -79,18 +79,6 @@ const ProfileScreen: React.FC = () => {
     });
   };
 
-  const handleSettings = () => {
-    showModal({
-      title: "Feature Coming Soon",
-      message: "This feature will be upgraded in the next update. Stay tuned!",
-      type: "info",
-      primaryButton: {
-        text: "OK",
-        onPress: () => setModalVisible(false),
-      },
-    });
-  };
-
   const handleLogout = () => {
     showModal({
       title: "Confirm Logout",
@@ -137,13 +125,11 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  // Safe rendering function for info cards
   const renderInfoCard = (title: string, data: any, icon: string) => {
     console.log(`Rendering card: ${title}`, data);
 
     let displayItems: string[] = [];
 
-    // Handle different data types safely
     if (Array.isArray(data)) {
       displayItems = data.filter((item) => item != null && item !== "");
     } else if (data != null && data !== "") {
@@ -218,7 +204,7 @@ const ProfileScreen: React.FC = () => {
     );
   }
 
-  if (!profileData) {
+  if (!loading && !profileData) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>
@@ -247,16 +233,6 @@ const ProfileScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Dashboard</Text>
-          {/* <TouchableOpacity
-            onPress={handleSettings}
-            style={styles.settingsButton}
-          >
-            <Ionicons
-              name="settings-outline"
-              size={24}
-              color={COLORS.textPrimary}
-            />
-          </TouchableOpacity> */}
         </View>
 
         <View style={styles.profileCard}>
@@ -266,25 +242,51 @@ const ProfileScreen: React.FC = () => {
               <Text style={styles.username}>
                 {profileData?.username || "User"}
               </Text>
-              <Text style={styles.email}>
-                {profileData?.email || "No email"}
-              </Text>
-              {profileData?.phoneNumber && (
-                <Text style={styles.phone}>{profileData.phoneNumber}</Text>
-              )}
+
+              <View style={styles.statusBadge}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>Active</Text>
+              </View>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditProfile}
-          >
-            <Ionicons name="pencil" size={16} color={COLORS.white} />
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+          <View style={styles.contactSection}>
+            <View style={styles.contactRow}>
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name="mail-outline"
+                  size={18}
+                  color={COLORS.primary}
+                />
+              </View>
+              <View style={styles.contactContent}>
+                <Text style={styles.contactLabel}>Email</Text>
+                <Text style={styles.contactValue}>
+                  {profileData?.email || "No email"}
+                </Text>
+              </View>
+            </View>
+
+            {profileData?.phoneNumber && (
+              <View style={styles.contactRow}>
+                <View style={styles.iconContainer}>
+                  <Ionicons
+                    name="call-outline"
+                    size={18}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <View style={styles.contactContent}>
+                  <Text style={styles.contactLabel}>Phone</Text>
+                  <Text style={styles.contactValue}>
+                    {profileData.phoneNumber}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
         </View>
 
-        {/* Basic Information Card */}
         {renderBasicInfoCard()}
 
         <View style={styles.sectionHeader}>
@@ -306,9 +308,9 @@ const ProfileScreen: React.FC = () => {
               "nutrition-outline"
             )}
             {renderInfoCard(
-              "Allergies",
-              profileData?.profile?.allergies,
-              "medical-outline"
+              "Activity Level",
+              profileData?.profile?.activityLevel,
+              "barbell-outline"
             )}
           </View>
 
@@ -327,14 +329,14 @@ const ProfileScreen: React.FC = () => {
 
           <View style={styles.preferencesRow}>
             {renderInfoCard(
-              "Activity Level",
-              profileData?.profile?.activityLevel,
-              "barbell-outline"
-            )}
-            {renderInfoCard(
               "Health Conditions",
               profileData?.profile?.healthConditions,
               "heart-outline"
+            )}
+            {renderInfoCard(
+              "Allergies",
+              profileData?.profile?.allergies,
+              "medical-outline"
             )}
           </View>
 
@@ -345,7 +347,6 @@ const ProfileScreen: React.FC = () => {
                 profileData.profile.menstrualHealth,
                 "flower-outline"
               )}
-              {/* <View style={styles.infoCard} /> */}
             </View>
           )}
         </View>
@@ -409,78 +410,122 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.greyMint,
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 22,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    // elevation: 1,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    // elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.greyLight,
   },
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.greyLight,
   },
   profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     marginRight: 16,
+    borderWidth: 3,
+    borderColor: COLORS.accent,
   },
   profileImagePlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary || "#007bff",
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
+    borderWidth: 3,
+    borderColor: COLORS.accent,
   },
   profileImageText: {
     fontSize: 32,
     fontWeight: "bold",
-    alignSelf: "center",
-    color: COLORS.white || "#fff",
+    // fontStyle: "italic",
+    color: COLORS.white,
   },
   profileInfo: {
     flex: 1,
   },
   username: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: COLORS.textPrimary || "#333",
-    marginBottom: 4,
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 8,
   },
-  email: {
-    fontSize: 14,
-    color: COLORS.textSecondary || "#666",
-    marginBottom: 2,
-  },
-  phone: {
-    fontSize: 14,
-    color: COLORS.textSecondary || "#666",
-  },
-  editButton: {
+  statusBadge: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    backgroundColor: COLORS.primary || "#007bff",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignSelf: "center",
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    alignSelf: "flex-start",
   },
-  editButtonText: {
-    color: COLORS.white || "#fff",
-    fontSize: 14,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.primary,
+  },
+  contactSection: {
+    gap: 10,
+  },
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    // backgroundColor: COLORS.accent,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  contactContent: {
+    flex: 1,
+  },
+  contactLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  contactValue: {
+    fontSize: 15,
     fontWeight: "600",
-    marginLeft: 4,
-    alignSelf: "center",
+    color: COLORS.textPrimary,
+  },
+  cardAccent: {
+    height: 4,
+    // backgroundColor: COLORS.primary,
+    borderRadius: 2,
+    marginTop: 16,
+    marginHorizontal: -4,
+    opacity: 0.3,
   },
   basicInfoCardTitle: {
     fontSize: 16,

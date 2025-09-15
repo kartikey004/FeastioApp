@@ -11,16 +11,16 @@ export interface NutritionalSummary {
 }
 
 export interface MealEntry {
-  mealType: string; // breakfast, lunch, dinner, snack
-  title: string; // e.g., "Grilled Chicken Salad"
-  description: string; // description/ingredients
+  mealType: string;
+  title: string;
+  description: string;
 }
 
 export interface MealPlan {
-  _id?: string; // MongoDB id
-  creatorId: string; // which user created it
-  name: string; // plan name
-  plan: Record<string, MealEntry[]>; // key = day (Mon, Tue...), value = meals
+  _id?: string;
+  creatorId: string;
+  name: string;
+  plan: Record<string, MealEntry[]>;
   totalNutritionalSummary?: NutritionalSummary;
   createdAt?: string;
 }
@@ -52,7 +52,6 @@ export const fetchMealPlans = createAsyncThunk<MealPlan[]>(
 
       console.log("Meal plans fetched:", res.data);
 
-      // return only the meal plans array
       return res.data.data as MealPlan[];
     } catch (err: any) {
       console.error(
@@ -86,8 +85,6 @@ export const updateMealPlan = createAsyncThunk<
     const res = await api.patch("/mealplans/update", payload);
 
     console.log("Meal plan updated:", res.data);
-    // const data: MealPlanResponse = res.data;
-    // return data.plan;
   } catch (err: any) {
     console.error(
       "Error updating meal plan:",
@@ -125,11 +122,8 @@ export const generateMealPlan = createAsyncThunk<
 
     const mealPlan: MealPlan = response.data;
 
-    // console.log("Saving AI meal plan to DB...");
-
     console.log("Meal plan saved:", response.data);
 
-    // 3. Return saved MealPlan
     return response.data.data as MealPlan;
   } catch (error: any) {
     console.error(
@@ -141,7 +135,7 @@ export const generateMealPlan = createAsyncThunk<
 });
 
 export const getTodayMealPlanThunk = createAsyncThunk<
-  TodayMealPlanResponse, // ✅ return type
+  TodayMealPlanResponse,
   void,
   { rejectValue: string }
 >("mealPlan/getTodayMealPlan", async (_, { rejectWithValue }) => {

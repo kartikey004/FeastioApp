@@ -18,29 +18,7 @@ import {
   View,
 } from "react-native";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-
-// Color constants
-export const COLORS = {
-  primary: "#00C674",
-  primaryLight: "#7CFCC3",
-  primaryDark: "#00B366",
-  accent: "#E3FFF3",
-  greyLight: "#F8F9FA",
-  greyMedium: "#E9ECEF",
-  greyWarm: "#F5F5F3",
-  greyCool: "#F1F3F4",
-  greyMint: "#F0F4F1",
-  greyNeutral: "#F6F6F6",
-  white: "#FFFFFF",
-  textPrimary: "#2D3748",
-  textSecondary: "#718096",
-  sage: "#9CAF88",
-  sageLight: "#E8F5E8",
-  background: "#FFFFFF",
-  cardBackground: "#f8f9fb",
-  google: "#DB4437",
-  facebook: "#1877F2",
-};
+import { COLORS } from "../utils/stylesheet.js";
 
 export default function OtpVerificationScreen() {
   const params = useLocalSearchParams<{ userId: string; email: string }>();
@@ -74,7 +52,6 @@ export default function OtpVerificationScreen() {
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const scaleAnimation = useRef(new Animated.Value(1)).current;
 
-  // Initialize fade animation
   useEffect(() => {
     Animated.timing(fadeAnimation, {
       toValue: 1,
@@ -83,7 +60,6 @@ export default function OtpVerificationScreen() {
     }).start();
   }, []);
 
-  // Timer for resend functionality
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (timeLeft > 0) {
@@ -120,19 +96,16 @@ export default function OtpVerificationScreen() {
   };
 
   const handleOtpChange = (value: string, index: number) => {
-    // Only allow numbers
     if (!/^\d*$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto move to next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Auto verify when all 6 digits are entered
     if (newOtp.every((digit) => digit !== "") && newOtp.join("").length === 6) {
       handleVerifyOTP(newOtp.join(""));
     }
@@ -150,7 +123,6 @@ export default function OtpVerificationScreen() {
   const handleVerifyOTP = (otpString: string = otp.join("")) => {
     if (otpString.length !== 6) {
       shakeInputs();
-      // Alert.alert("Invalid OTP", "Please enter all 6 digits");
       showModal({
         title: "Invalid OTP",
         message: "Please enter all 6 digits.",
@@ -174,7 +146,6 @@ export default function OtpVerificationScreen() {
       .unwrap()
       .then((user) => {
         console.log("OTP verified successfully:", user);
-        // Success animation
         Animated.sequence([
           Animated.timing(scaleAnimation, {
             toValue: 1.1,
@@ -197,7 +168,6 @@ export default function OtpVerificationScreen() {
         shakeInputs();
         clearOtp();
         Vibration.vibrate(200);
-        // Alert.alert("Invalid OTP", "Please check your OTP and try again");
       })
       .finally(() => {
         setIsVerifying(false);
@@ -209,7 +179,7 @@ export default function OtpVerificationScreen() {
 
     setResendLoading(true);
     setCanResend(false);
-    setTimeLeft(300); // 5 minutes = 300 seconds
+    setTimeLeft(300);
     clearOtp();
 
     dispatch(resendOTP({ email: email! }))
@@ -311,15 +281,6 @@ export default function OtpVerificationScreen() {
                 },
               ]}
             >
-              {/* <View style={styles.header}> */}
-              {/* <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => router.back()}
-                >
-                  <Ionicons name="arrow-back" size={24} color={COLORS.white} />
-                </TouchableOpacity> */}
-              {/* </View> */}
-
               <View style={styles.logoContainer}>
                 <View style={styles.logoCircle}>
                   <Ionicons
@@ -336,7 +297,6 @@ export default function OtpVerificationScreen() {
                 <Text style={styles.emailText}>{maskEmail(email || "")}</Text>
               </Text>
 
-              {/* OTP Input */}
               <Animated.View
                 style={[
                   styles.otpContainer,
@@ -363,23 +323,17 @@ export default function OtpVerificationScreen() {
                     maxLength={1}
                     selectTextOnFocus
                     textContentType="oneTimeCode"
-                    editable={!loading && !isVerifying}
+                    editable={!isVerifying}
                   />
                 ))}
               </Animated.View>
 
               <TouchableOpacity
-                style={[
-                  styles.verifyButton,
-                  // otp.join("").length === 6 && !isVerifying && !loading
-                  // ?
-                  styles.verifyButtonActive,
-                  // : styles.verifyButtonInactive,
-                ]}
+                style={[styles.verifyButton, styles.verifyButtonActive]}
                 onPress={() => handleVerifyOTP()}
-                disabled={loading || isVerifying || otp.join("").length !== 6}
+                disabled={isVerifying || otp.join("").length !== 6}
               >
-                {isVerifying || loading ? (
+                {isVerifying ? (
                   <View style={styles.loadingContainer}>
                     <Animated.View
                       style={[
@@ -418,21 +372,8 @@ export default function OtpVerificationScreen() {
                   </View>
                 ) : (
                   <Text style={styles.verifyButtonText}>Verify OTP</Text>
-                  // <Text></Text>
                 )}
               </TouchableOpacity>
-
-              {/* Error Message */}
-              {/* {error && (
-                <View style={styles.errorContainer}>
-                  <Ionicons
-                    name="alert-circle"
-                    size={16}
-                    color={COLORS.google}
-                  />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              )} */}
 
               <View style={styles.resendContainer}>
                 <Text style={styles.resendText}>Didn't receive the code?</Text>
@@ -469,7 +410,7 @@ export default function OtpVerificationScreen() {
                 Having trouble? Check your spam folder{"\n"}or contact support
                 at{" "}
                 <Text style={{ fontWeight: "600", color: "#fff" }}>
-                  nutrisense.help@gmail.com
+                  feastio.help@gmail.com
                 </Text>
               </Text>
             </Animated.View>

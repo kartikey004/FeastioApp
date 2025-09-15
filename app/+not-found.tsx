@@ -5,10 +5,9 @@ import { StyleSheet, Text, View } from "react-native";
 export default function NotFoundScreen() {
   const router = useRouter();
 
-  // ⏳ Auto-redirect to login after 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/loginScreen"); // Adjust the route if your login screen path is different
+      router.replace("/loginScreen");
     }, 2000);
 
     return () => clearTimeout(timer);

@@ -21,7 +21,7 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  userId: string | null; //for otp verification
+  userId: string | null;
   isOtpSent: boolean;
   loading: boolean;
   error: string | null;
@@ -50,7 +50,6 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Google Sign In
     builder
       .addCase(googleSignIn.pending, (state) => {
         state.loading = true;
@@ -66,7 +65,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
-    // Register User
     builder
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -121,7 +119,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
-    // Login User
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -174,7 +171,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
-    // 🔹 Resend Forgot OTP
     builder
       .addCase(resendForgotOTP.pending, (state) => {
         state.loading = true;
@@ -190,7 +186,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
-    // 🔹 Reset Password
     builder
       .addCase(resetPassword.pending, (state) => {
         state.loading = true;

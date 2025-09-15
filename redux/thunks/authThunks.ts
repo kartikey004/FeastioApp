@@ -10,7 +10,6 @@ interface BackendUser {
   profilePicture?: string | null;
 }
 
-// Utility functions for SecureStore
 const saveTokens = async (accessToken: string, refreshToken: string) => {
   await SecureStore.setItemAsync("accessToken", accessToken);
   await SecureStore.setItemAsync("refreshToken", refreshToken);
@@ -68,7 +67,7 @@ export const registerUser = createAsyncThunk<
 >("auth/registerUser", async (formData, { rejectWithValue }) => {
   try {
     const response = await api.post("/auth/register", formData);
-    return response.data; // { message, userId }
+    return response.data;
   } catch (error: any) {
     const errMsg =
       error?.response?.data?.message || error?.message || "Registration failed";
@@ -105,7 +104,7 @@ export const resendOTP = createAsyncThunk<
 >("auth/resendOTP", async ({ email }, { rejectWithValue }) => {
   try {
     const response = await api.post("/auth/resend-otp", { email });
-    return response.data; // { message, userId }
+    return response.data;
   } catch (error: any) {
     const errMsg =
       error?.response?.data?.message || error?.message || "Resend OTP failed";
@@ -139,15 +138,12 @@ export const logoutUser = createAsyncThunk<
   { rejectValue: string }
 >("auth/logoutUser", async (_, { rejectWithValue }) => {
   try {
-    // Call logout API to clear refresh token from server
     const response = await api.post("/auth/logout");
 
-    // Clear tokens from SecureStore
     await clearTokens();
 
     return response.data.message || "Logged out successfully";
   } catch (error) {
-    // Even if API call fails, clear local tokens
     await clearTokens();
 
     let errorMessage = "Logout failed";
@@ -175,7 +171,7 @@ export const forgotPassword = createAsyncThunk<
 >("auth/forgotPassword", async ({ email }, { rejectWithValue }) => {
   try {
     const response = await api.post("/auth/forgot-password", { email });
-    return response.data; // { message, userId }
+    return response.data;
   } catch (error: any) {
     const errMsg =
       error?.response?.data?.message ||
@@ -192,7 +188,7 @@ export const resendForgotOTP = createAsyncThunk<
 >("auth/resendForgotOTP", async ({ email }, { rejectWithValue }) => {
   try {
     const response = await api.post("/auth/resend-forgot-otp", { email });
-    return response.data; // { message }
+    return response.data;
   } catch (error: any) {
     const errMsg =
       error?.response?.data?.message ||

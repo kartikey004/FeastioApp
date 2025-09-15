@@ -16,6 +16,6 @@ export const COLORS = {
   sageLight: "#E8F5E8",
   background: "#FFFFFF",
   cardBackground: "#f8f9fb",
-  google: "#DB4437",
+  google: "#ff4757",
   facebook: "#1877F2",
 };

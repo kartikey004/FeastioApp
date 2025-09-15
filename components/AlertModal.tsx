@@ -43,7 +43,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
       case "success":
         return { name: "checkmark-circle", color: "#4CAF50" };
       case "error":
-        return { name: "close-circle", color: "#DB4437" };
+        return { name: "close-circle", color: "#ff4757" };
       case "warning":
         return { name: "warning", color: "#FF9800" };
       default:
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    height: verticalScale(48),
+    height: verticalScale(38),
     borderRadius: moderateScale(12),
     justifyContent: "center",
     alignItems: "center",

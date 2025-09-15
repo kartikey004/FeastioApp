@@ -2,21 +2,21 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "NutriSenseApplication",
-    slug: "NutriSenseApplication",
-    displayName: "NutriSense",
+    name: "Feastio",
+    slug: "Feastio",
+    displayName: "Feastio",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
-    scheme: "nutrisense",
+    scheme: "feastio",
     owner: "kartikey004",
     assetBundlePatterns: ["**/*"],
 
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.kartikey004.nutrisense",
+      bundleIdentifier: "com.kartikey004.feastio",
     },
 
     android: {
@@ -24,7 +24,7 @@ export default {
         foregroundImage: "./assets/images/icon.png",
         backgroundColor: "#FFFFFF",
       },
-      package: "com.kartikey004.nutrisense",
+      package: "com.kartikey004.feastio",
 
       edgeToEdgeEnabled: true,
     },

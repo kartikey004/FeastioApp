@@ -117,10 +117,6 @@ const DropdownModal: React.FC<DropdownModalProps> = React.memo(
                         >
                           {item}
                         </Text>
-                        {/* {(isMultiSelect && selectedValues?.includes(item)) ||
-                        (!isMultiSelect && selectedValue === item) ? (
-                          <Text style={styles.checkmarkSimple}>✓</Text>
-                        ) : null} */}
                       </TouchableOpacity>
                     )}
                     showsVerticalScrollIndicator={false}

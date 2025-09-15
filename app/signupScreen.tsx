@@ -58,14 +58,6 @@ export default function SignupScreen() {
     (state) => state.auth
   );
 
-  // Combine all configuration into a single object
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
-  //   iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-  //   webClientId: Constants.expoConfig?.extra?.googleWebClientId,
-  //   scopes: ["profile", "email"],
-  // });
-
   useEffect(() => {
     if (error) {
       showModal({
@@ -90,7 +82,7 @@ export default function SignupScreen() {
   const handleEmailChange = (value: string) => {
     setEmail(value);
     if (!value) {
-      setEmailError(""); // clear error if empty
+      setEmailError("");
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -101,11 +93,10 @@ export default function SignupScreen() {
     }
   };
 
-  // Phone validation
   const handlePhoneChange = (value: string) => {
     setPhoneNumber(value);
     if (!value) {
-      setPhoneError(""); // clear error if empty
+      setPhoneError("");
       return;
     }
     const phoneRegex = /^[0-9]{10}$/;
@@ -116,12 +107,11 @@ export default function SignupScreen() {
     }
   };
 
-  // Password validation
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (!value) {
-      setPasswordError(""); // clear error if empty
-      setConfirmPasswordError(""); // also clear confirmPasswordError if password is cleared
+      setPasswordError("");
+      setConfirmPasswordError("");
       return;
     }
     if (value.length < 6) {
@@ -129,7 +119,6 @@ export default function SignupScreen() {
     } else {
       setPasswordError("");
     }
-    // Also validate confirm password if user typed it
     if (confirmPassword && value !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match");
     } else {
@@ -137,11 +126,10 @@ export default function SignupScreen() {
     }
   };
 
-  // Confirm password validation
   const handleConfirmPasswordChange = (value: string) => {
     setConfirmPassword(value);
     if (!value) {
-      setConfirmPasswordError(""); // clear error if empty
+      setConfirmPasswordError("");
       return;
     }
     if (password !== value) {
@@ -218,49 +206,8 @@ export default function SignupScreen() {
             text: "Try Again",
             onPress: () => setModalVisible(false),
           },
-          // secondaryButton: {
-          //   text: "Contact Support",
-          //   onPress: () => {
-          //     setModalVisible(false);
-          //     // Optional: Navigate to support screen or open email client
-          //     // router.push("/support");
-          //   },
-          // },
         });
       });
-  };
-
-  const handleGoogleSignUp = async () => {
-    console.log("Google Sign-Up pressed");
-
-    // Show info modal for Google Sign-In
-    showModal({
-      title: "Google Sign-Up",
-      message:
-        "Google Sign-Up feature is coming soon! Please use email and password for now.",
-      type: "info",
-      primaryButton: {
-        text: "OK",
-        onPress: () => setModalVisible(false),
-      },
-    });
-    // await promptAsync();
-  };
-
-  const handleFacebookSignUp = () => {
-    console.log("Facebook Sign-Up pressed");
-
-    // Show info modal for Facebook Sign-In
-    showModal({
-      title: "Facebook Sign-Up",
-      message:
-        "Facebook Sign-Up feature is coming soon! Please use email and password for now.",
-      type: "info",
-      primaryButton: {
-        text: "OK",
-        onPress: () => setModalVisible(false),
-      },
-    });
   };
 
   const emailRef = useRef<TextInput>(null);
@@ -285,7 +232,7 @@ export default function SignupScreen() {
           >
             <View style={styles.logoContainer}>
               <Image
-                source={require("../assets/images/nutrisenseLogo.png")}
+                source={require("../assets/images/feastioLogo.png")}
                 style={styles.logo}
                 resizeMode="cover"
               />
@@ -304,7 +251,6 @@ export default function SignupScreen() {
             {emailError ? (
               <Text style={styles.errorText}>{emailError}</Text>
             ) : null}
-            {/* Email */}
             <TextInput
               ref={emailRef}
               style={styles.input}
@@ -318,7 +264,6 @@ export default function SignupScreen() {
               onSubmitEditing={() => phoneRef.current?.focus()}
             />
 
-            {/* Phone Number */}
             {phoneError ? (
               <Text style={styles.errorText}>{phoneError}</Text>
             ) : null}
@@ -337,7 +282,6 @@ export default function SignupScreen() {
               <Text style={styles.errorText}>{passwordError}</Text>
             ) : null}
             <View style={styles.passwordContainer}>
-              {/* Password */}
               <TextInput
                 ref={passwordRef}
                 style={styles.inputPassword}
@@ -388,7 +332,6 @@ export default function SignupScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Signup Button */}
             <TouchableOpacity
               style={[styles.signupButton, loading && { opacity: 0.7 }]}
               onPress={handleSignup}
@@ -401,7 +344,6 @@ export default function SignupScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Navigation */}
             <View style={styles.buttonContainer}>
               <Text style={styles.loginText}>Already have an account?</Text>
               <TouchableOpacity
@@ -411,22 +353,6 @@ export default function SignupScreen() {
                 <Text style={styles.loginButtonText}> Sign In</Text>
               </TouchableOpacity>
             </View>
-
-            {/* <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.button, styles.googleButton]}
-                onPress={handleGoogleSignUp}
-              >
-                <Ionicons name="logo-google" size={35} color="#DB4437" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.button, styles.facebookButton]}
-                onPress={handleFacebookSignUp}
-              >
-                <Ionicons name="logo-facebook" size={40} color="#1877F2" />
-              </TouchableOpacity>
-            </View> */}
           </LinearGradient>
 
           <AlertModal
@@ -456,7 +382,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(25),
   },
   logo: {
-    width: "90%",
+    width: "60%",
     height: verticalScale(60),
     // marginLeft: 10,
     alignSelf: "center",

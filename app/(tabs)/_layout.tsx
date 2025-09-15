@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Image } from "react-native";
+import { Image, TouchableOpacity } from "react-native";
 
 // Import your icons
 import { COLORS } from "@/utils/stylesheet";
@@ -13,7 +13,6 @@ import mealPlanOutlined from "../../assets/images/mealPlanOutlinedIcon.png";
 import personFilled from "../../assets/images/profileFilledIcon.png";
 import personOutlined from "../../assets/images/profileOutlinedIcon.png";
 
-// Enhanced Icon Component
 const TabIcon = ({
   focused,
   source,
@@ -31,7 +30,7 @@ const TabIcon = ({
       height: 30,
       borderRadius: 16,
       backgroundColor: focused ? "trasnparent" : "transparent",
-      transform: [{ scale: focused ? 1.1 : 1 }],
+      transform: [{ scale: focused ? 1.2 : 1 }],
     }}
   >
     <Image
@@ -58,7 +57,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
-          marginTop: 4,
+          marginTop: 6,
         },
         tabBarStyle: {
           height: 80,
@@ -77,7 +76,22 @@ export default function TabLayout() {
           shadowRadius: 8,
         },
         tabBarItemStyle: {
-          paddingVertical: 4,
+          // paddingVertical: 4,
+          paddingHorizontal: 8,
+          margin: 4,
+          borderRadius: 12,
+        },
+        tabBarButton: (props) => {
+          const { children, onPress, style, ...otherProps } = props;
+          return (
+            <TouchableOpacity
+              onPress={onPress}
+              activeOpacity={0.7}
+              style={[style, { flex: 1 }]}
+            >
+              {children}
+            </TouchableOpacity>
+          );
         },
       }}
     >

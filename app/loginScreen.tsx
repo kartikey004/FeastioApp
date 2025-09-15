@@ -54,7 +54,6 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (user) {
-      // Show success modal when user logs in successfully
       showModal({
         title: "Welcome Back!",
         message: "You have successfully signed in to your account.",
@@ -115,7 +114,6 @@ export default function LoginScreen() {
     }
 
     if (hasError) {
-      // Show validation error modal
       showModal({
         title: "Validation Error",
         message: "Please check your email and password and try again.",
@@ -139,7 +137,6 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = async () => {
-    // router.push("/resetPasswordScreen");
     if (!email) {
       showModal({
         title: "Email Required",
@@ -177,7 +174,7 @@ export default function LoginScreen() {
             setModalVisible(false);
             router.push({
               pathname: "/resetPasswordScreen",
-              params: { email }, // pass email to next screen
+              params: { email },
             });
           },
         },
@@ -196,24 +193,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    console.log("Google Sign-In pressed");
-
-    // Show info modal for Google Sign-In
-    showModal({
-      title: "Google Sign-In",
-      message:
-        "Google Sign-In feature is coming soon! Please use email and password for now.",
-      type: "info",
-      primaryButton: {
-        text: "OK",
-        onPress: () => setModalVisible(false),
-      },
-    });
-
-    // await promptAsync();
-  };
-
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
@@ -230,11 +209,10 @@ export default function LoginScreen() {
         >
           <View style={styles.logoContainer}>
             <Image
-              source={require("../assets/images/nutrisenseLogo.png")}
+              source={require("../assets/images/feastioLogo.png")}
               style={styles.logo}
               resizeMode="cover"
             />
-            {/* <Text style={styles.title}>Welcome to GeoNudge</Text> */}
             <Text style={styles.subtitle}>Eat smarter. Live better.</Text>
           </View>
 
@@ -245,7 +223,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={(text) => {
               setEmail(text);
-              if (emailError) setEmailError(""); // Clear error when user starts typing
+              if (emailError) setEmailError("");
             }}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -265,7 +243,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
-                if (passwordError) setPasswordError(""); // Clear error when user starts typing
+                if (passwordError) setPasswordError("");
               }}
               secureTextEntry={!showPassword}
               returnKeyType="done"
@@ -328,32 +306,6 @@ export default function LoginScreen() {
               <Text style={styles.loginButtonText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-
-          {/* <Text style={styles.orLoginText}>OR</Text> */}
-
-          {/* <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.googleButton]}
-              onPress={handleGoogleSignIn}
-            >
-              <Ionicons
-                name="logo-google"
-                size={moderateScale(35)}
-                color="#DB4437"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, styles.facebookButton]}
-              onPress={handleFacebookSignIn}
-            >
-              <Ionicons
-                name="logo-facebook"
-                size={moderateScale(40)}
-                color="#1877F2"
-              />
-            </TouchableOpacity>
-          </View> */}
         </LinearGradient>
 
         <AlertModal
@@ -383,7 +335,7 @@ const styles = StyleSheet.create({
     marginVertical: verticalScale(15),
   },
   logo: {
-    width: "90%",
+    width: "60%",
     height: verticalScale(60),
     alignSelf: "center",
   },

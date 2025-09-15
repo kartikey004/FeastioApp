@@ -34,9 +34,6 @@ export default function AIAssistantScreen() {
   const EmptyState = () => (
     <SafeAreaView style={styles.emptyStateContainer}>
       <View style={styles.emptyStateContainerView}>
-        {/* <View style={styles.sageIconContainer}> */}
-        {/* <Text style={styles.sageIcon}>🌿</Text> */}
-        {/* </View> */}
         <Text style={styles.emptyStateTitle}>Hey! I'm Sage AI</Text>
         <Text style={styles.emptyStateSubtitle}>
           Your personal nutrition assistant ready to help with meal planning,
@@ -163,14 +160,12 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: COLORS.background,
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    // borderBottomWidth: 1,
+    paddingVertical: 10,
     borderBottomColor: COLORS.greyLight,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
-    // elevation: 3,
   },
   headerContent: {
     alignItems: "center",
@@ -219,7 +214,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 1,
+    // elevation: 1,
   },
   userBubble: {
     alignSelf: "flex-end",
@@ -228,7 +223,7 @@ const styles = StyleSheet.create({
   },
   aiBubble: {
     alignSelf: "flex-start",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.greyMint,
     borderBottomLeftRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.greyLight,
@@ -299,7 +294,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
   },
   emptyStateTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 8,
@@ -333,7 +328,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 1,
+    // elevation: 1,
   },
   suggestionText: {
     fontSize: 15,

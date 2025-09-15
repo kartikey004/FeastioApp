@@ -1,6 +1,7 @@
 import AlertModal from "@/components/AlertModal";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { resetPassword } from "@/redux/thunks/authThunks";
+import { COLORS } from "@/utils/stylesheet";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -19,54 +20,23 @@ import {
   View,
 } from "react-native";
 
-// Color constants
-export const COLORS = {
-  primary: "#00C674",
-  primaryLight: "#7CFCC3",
-  primaryDark: "#00B366",
-  accent: "#E3FFF3",
-  greyLight: "#F8F9FA",
-  greyMedium: "#E9ECEF",
-  greyWarm: "#F5F5F3",
-  greyCool: "#F1F3F4",
-  greyMint: "#F0F4F1",
-  greyNeutral: "#F6F6F6",
-  white: "#FFFFFF",
-  textPrimary: "#2D3748",
-  textSecondary: "#718096",
-  sage: "#9CAF88",
-  sageLight: "#E8F5E8",
-  background: "#FFFFFF",
-  cardBackground: "#f8f9fb",
-  google: "#DB4437",
-  facebook: "#1877F2",
-};
-
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.auth);
   const { email } = useLocalSearchParams<{ email: string }>();
 
-  // OTP states
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const otpInputs = useRef<Array<TextInput | null>>([]);
 
-  // Password states
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Error states
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
-
-  // Resend timer
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(true);
-
-  // Modal
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: "",
@@ -84,7 +54,6 @@ export default function ResetPasswordScreen() {
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const scaleAnimation = useRef(new Animated.Value(1)).current;
 
-  // Initialize fade animation
   useEffect(() => {
     Animated.timing(fadeAnimation, {
       toValue: 1,
@@ -99,8 +68,6 @@ export default function ResetPasswordScreen() {
     setModalConfig({ ...modalConfig, ...config });
     setModalVisible(true);
   };
-
-  // OTP change handler
   const handleOtpChange = (value: string, index: number) => {
     if (!/^\d*$/.test(value)) return;
 
@@ -155,7 +122,6 @@ export default function ResetPasswordScreen() {
     ]).start();
   };
 
-  // Timer effect
   useEffect(() => {
     if (timer === 0) {
       setCanResend(true);
@@ -178,7 +144,6 @@ export default function ResetPasswordScreen() {
   };
 
   const handleResetPassword = async () => {
-    // 1️⃣ Basic validations
     if (!password || password.length < 6) {
       setPasswordError("Password must be at least 6 characters");
       shakeInputs();
@@ -191,7 +156,6 @@ export default function ResetPasswordScreen() {
       return;
     } else setConfirmPasswordError("");
 
-    // 2️⃣ Dispatch the resetPassword thunk
     try {
       const resultAction = await dispatch(
         resetPassword({
@@ -202,17 +166,14 @@ export default function ResetPasswordScreen() {
       );
 
       if (resetPassword.fulfilled.match(resultAction)) {
-        // Success: user is logged in automatically
         const user = resultAction.payload;
         console.log("Password reset successful, user:", user);
-        router.replace("/(tabs)/homeScreen"); // navigate to home or dashboard
+        router.replace("/(tabs)/homeScreen");
       } else {
-        // Error from backend
         const errorMessage = resultAction.payload || "Reset password failed";
         showModal({ type: "error", message: errorMessage });
       }
     } catch (error) {
-      // Catch any unexpected errors
       showModal({ type: "error", message: "Something went wrong. Try again." });
       console.error("Reset password error:", error);
     }
@@ -288,7 +249,6 @@ export default function ResetPasswordScreen() {
                 ))}
               </Animated.View>
 
-              {/* Password Inputs */}
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={styles.inputPassword}
@@ -405,7 +365,7 @@ export default function ResetPasswordScreen() {
                 Having trouble? Check your spam folder{"\n"}or contact support
                 at{" "}
                 <Text style={{ fontWeight: "600", color: "#fff" }}>
-                  nutrisense.help@gmail.com
+                  feastio.help@gmail.com
                 </Text>
               </Text>
             </Animated.View>

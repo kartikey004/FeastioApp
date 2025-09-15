@@ -10,7 +10,6 @@ export default function SplashScreen() {
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Run animation on mount
     Animated.parallel([
       Animated.timing(scaleAnim, {
         toValue: 1,
@@ -41,7 +40,7 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require("../assets/images/nutrisenseLogo.png")}
+        source={require("../assets/images/feastioLogo.png")}
         style={[
           styles.logo,
           {
@@ -63,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   logo: {
-    width: 280,
-    height: 280,
+    width: 320,
+    height: 320,
   },
 });

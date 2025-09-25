@@ -105,6 +105,5 @@ npx expo build:ios
 
 For any questions, issues, or suggestions regarding this project, you can reach out to:
 
-- **Name**: Kartikey  
 - **Email**: kartikeym004@gmail.com
 - **GitHub**: [https://github.com/kartikey004](https://github.com/kartikey004)

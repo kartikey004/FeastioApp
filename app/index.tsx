@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   logo: {
-    width: 320,
-    height: 320,
+    width: 240,
+    height: 240,
   },
 });

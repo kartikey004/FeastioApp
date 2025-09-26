@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { COLORS } from "../utils/stylesheet.js";
+import { COLORS } from "../utils/stylesheet";
 
 export default function OtpVerificationScreen() {
   const params = useLocalSearchParams<{ userId: string; email: string }>();

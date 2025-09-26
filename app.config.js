@@ -14,6 +14,12 @@ export default {
     owner: "kartikey004",
     assetBundlePatterns: ["**/*"],
 
+    extra: {
+      eas: {
+        projectId: "57b98852-2ac5-4f25-b368-2b69bdbadcbb",
+      },
+    },
+
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.kartikey004.feastio",
@@ -35,7 +41,7 @@ export default {
       favicon: "./assets/images/favicon.png",
     },
 
-    plugins: ["expo-router"],
+    plugins: ["expo-router", "expo-web-browser"],
 
     experiments: {
       typedRoutes: true,

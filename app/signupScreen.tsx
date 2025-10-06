@@ -54,7 +54,7 @@ export default function SignupScreen() {
 
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loading, error, userId, isOtpSent } = useAppSelector(
+  const { loading, error, tempToken, isOtpSent } = useAppSelector(
     (state) => state.auth
   );
 
@@ -189,7 +189,7 @@ export default function SignupScreen() {
         console.log("Registration successful:", user);
         router.replace({
           pathname: "/otpVerificationScreen",
-          params: { userId: user.userId, email: email },
+          params: { tempToken: user.tempToken, email: user.email },
         });
       })
       .catch((err) => {

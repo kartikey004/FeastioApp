@@ -21,7 +21,7 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  userId: string | null;
+  tempToken: string | null;
   isOtpSent: boolean;
   loading: boolean;
   error: string | null;
@@ -30,7 +30,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  userId: null,
+  tempToken: null,
   isOtpSent: false,
   loading: false,
   error: null,
@@ -43,7 +43,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.userId = null;
+      state.tempToken = null;
       state.isOtpSent = false;
       state.error = null;
       state.successMessage = null;
@@ -73,7 +73,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.userId = action.payload.userId;
+        state.tempToken = action.payload.tempToken;
         state.isOtpSent = true;
         state.error = null;
         state.successMessage =
@@ -92,7 +92,7 @@ const authSlice = createSlice({
       .addCase(verifyOTP.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        state.userId = null;
+        state.tempToken = null;
         state.isOtpSent = false;
         state.error = null;
         state.successMessage = "Email verified and logged in successfully";
@@ -109,7 +109,7 @@ const authSlice = createSlice({
       })
       .addCase(resendOTP.fulfilled, (state, action) => {
         state.loading = false;
-        state.userId = action.payload.userId;
+        state.tempToken = action.payload.tempToken;
         state.isOtpSent = true;
         state.error = null;
         state.successMessage = "A new OTP has been sent to your email";
@@ -144,12 +144,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = null;
         state.error = null;
-        state.successMessage = action.payload; // "Logged out successfully"
+        state.successMessage = action.payload;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.user = null;
-        state.userId = null;
+        state.tempToken = null;
         state.isOtpSent = false;
         state.error = action.payload as string;
       });
@@ -161,7 +161,7 @@ const authSlice = createSlice({
       })
       .addCase(forgotPassword.fulfilled, (state, action) => {
         state.loading = false;
-        state.userId = action.payload.userId;
+        state.tempToken = action.payload.tempToken;
         state.isOtpSent = true;
         state.successMessage =
           "Password reset OTP sent to your email. Please verify to reset.";
@@ -194,7 +194,7 @@ const authSlice = createSlice({
       .addCase(resetPassword.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        state.userId = null;
+        state.tempToken = null;
         state.isOtpSent = false;
         state.successMessage = "Password reset successful. You are logged in.";
       })

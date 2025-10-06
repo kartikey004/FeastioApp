@@ -21,8 +21,8 @@ import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { COLORS } from "../utils/stylesheet";
 
 export default function OtpVerificationScreen() {
-  const params = useLocalSearchParams<{ userId: string; email: string }>();
-  const { userId, email } = params;
+  const params = useLocalSearchParams<{ tempToken: string; email: string }>();
+  const { tempToken, email } = params;
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -139,7 +139,7 @@ export default function OtpVerificationScreen() {
 
     dispatch(
       verifyOTP({
-        userId: userId,
+        tempToken,
         otp: otpString,
       })
     )

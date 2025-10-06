@@ -33,7 +33,6 @@ export const googleSignIn = createAsyncThunk<
     const { accessToken: newAccessToken, refreshToken, user } = response.data;
 
     await saveTokens(newAccessToken, refreshToken);
-
     await SecureStore.setItemAsync("userProfile", JSON.stringify(user));
 
     return user;
@@ -61,7 +60,7 @@ export const googleSignIn = createAsyncThunk<
 });
 
 export const registerUser = createAsyncThunk<
-  { userId: string },
+  { tempToken: string; email: string },
   { username: string; email: string; password: string; phoneNumber: string },
   { rejectValue: string }
 >("auth/registerUser", async (formData, { rejectWithValue }) => {
@@ -77,11 +76,11 @@ export const registerUser = createAsyncThunk<
 
 export const verifyOTP = createAsyncThunk<
   BackendUser,
-  { userId: string; otp: string },
+  { tempToken: string; otp: string },
   { rejectValue: string }
->("auth/verifyOTP", async ({ userId, otp }, { rejectWithValue }) => {
+>("auth/verifyOTP", async ({ tempToken, otp }, { rejectWithValue }) => {
   try {
-    const response = await api.post("/auth/verify-otp", { userId, otp });
+    const response = await api.post("/auth/verify-otp", { tempToken, otp });
     const { accessToken, refreshToken, user } = response.data;
 
     await saveTokens(accessToken, refreshToken);
@@ -98,7 +97,7 @@ export const verifyOTP = createAsyncThunk<
 });
 
 export const resendOTP = createAsyncThunk<
-  { userId: string },
+  { tempToken: string },
   { email: string },
   { rejectValue: string }
 >("auth/resendOTP", async ({ email }, { rejectWithValue }) => {
@@ -141,7 +140,6 @@ export const logoutUser = createAsyncThunk<
     const response = await api.post("/auth/logout");
 
     await clearTokens();
-
     return response.data.message || "Logged out successfully";
   } catch (error) {
     await clearTokens();
@@ -165,7 +163,7 @@ export const logoutUser = createAsyncThunk<
 });
 
 export const forgotPassword = createAsyncThunk<
-  { userId: string; message: string },
+  { tempToken: string; message: string },
   { email: string },
   { rejectValue: string }
 >("auth/forgotPassword", async ({ email }, { rejectWithValue }) => {
@@ -182,7 +180,7 @@ export const forgotPassword = createAsyncThunk<
 });
 
 export const resendForgotOTP = createAsyncThunk<
-  { message: string },
+  { tempToken: string; message: string },
   { email: string },
   { rejectValue: string }
 >("auth/resendForgotOTP", async ({ email }, { rejectWithValue }) => {
@@ -200,14 +198,14 @@ export const resendForgotOTP = createAsyncThunk<
 
 export const resetPassword = createAsyncThunk<
   BackendUser,
-  { email: string; otp: string; newPassword: string },
+  { tempToken: string; otp: string; newPassword: string },
   { rejectValue: string }
 >(
   "auth/resetPassword",
-  async ({ email, otp, newPassword }, { rejectWithValue }) => {
+  async ({ tempToken, otp, newPassword }, { rejectWithValue }) => {
     try {
       const response = await api.post("/auth/reset-password", {
-        email,
+        tempToken,
         otp,
         newPassword,
       });

@@ -1,9 +1,9 @@
 import { Tabs } from "expo-router";
-import { Image, TouchableOpacity } from "react-native";
+import { Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Import your icons
 import { COLORS } from "@/utils/stylesheet";
-import { SafeAreaView } from "react-native-safe-area-context";
 import assistantFilled from "../../assets/images/assistantIconFilled.png";
 import assistantOutlined from "../../assets/images/assistantIconOutlined.png";
 import dashboardFilled from "../../assets/images/dashboardFilledIcon.png";
@@ -16,36 +16,26 @@ import personOutlined from "../../assets/images/profileOutlinedIcon.png";
 const TabIcon = ({
   focused,
   source,
-  size = 20,
+  size = 22,
 }: {
   focused: boolean;
   source: any;
   size?: number;
 }) => (
-  <SafeAreaView
+  <Image
+    source={source}
     style={{
-      alignItems: "center",
-      justifyContent: "center",
-      width: 30,
-      height: 30,
-      borderRadius: 16,
-      backgroundColor: focused ? "trasnparent" : "transparent",
-      transform: [{ scale: focused ? 1.2 : 1 }],
+      width: size,
+      height: size,
+      tintColor: focused ? COLORS.primaryDark : "#666",
     }}
-  >
-    <Image
-      source={source}
-      style={{
-        width: size,
-        height: size,
-        tintColor: focused ? COLORS.primaryDark : "#666",
-      }}
-      resizeMode="contain"
-    />
-  </SafeAreaView>
+    resizeMode="contain"
+  />
 );
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       initialRouteName="homeScreen"
@@ -57,41 +47,24 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
-          marginTop: 6,
+          marginTop: 2, // reduce margin to bring label closer
         },
         tabBarStyle: {
-          height: 80,
-          paddingBottom: 20,
-          // paddingTop: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 4, // small padding for safe area
           backgroundColor: "#fff",
           borderTopWidth: 0.5,
           borderTopColor: "#E5E5E5",
-          // elevation: 8,
           shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: -2,
-          },
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
         },
         tabBarItemStyle: {
-          // paddingVertical: 4,
+          alignItems: "center", // center icon and label
           paddingHorizontal: 8,
           margin: 4,
           borderRadius: 12,
-        },
-        tabBarButton: (props) => {
-          const { children, onPress, style, ...otherProps } = props;
-          return (
-            <TouchableOpacity
-              onPress={onPress}
-              activeOpacity={0.7}
-              style={[style, { flex: 1 }]}
-            >
-              {children}
-            </TouchableOpacity>
-          );
         },
       }}
     >
@@ -103,7 +76,6 @@ export default function TabLayout() {
             <TabIcon
               focused={focused}
               source={focused ? dashboardFilled : dashboardOutlined}
-              size={22}
             />
           ),
         }}
@@ -117,7 +89,6 @@ export default function TabLayout() {
             <TabIcon
               focused={focused}
               source={focused ? assistantFilled : assistantOutlined}
-              size={22}
             />
           ),
         }}
@@ -131,7 +102,6 @@ export default function TabLayout() {
             <TabIcon
               focused={focused}
               source={focused ? mealPlanFilled : mealPlanOutlined}
-              size={22}
             />
           ),
         }}
@@ -145,7 +115,6 @@ export default function TabLayout() {
             <TabIcon
               focused={focused}
               source={focused ? personFilled : personOutlined}
-              size={22}
             />
           ),
         }}

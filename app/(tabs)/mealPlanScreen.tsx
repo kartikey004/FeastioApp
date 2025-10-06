@@ -4,9 +4,11 @@ import {
   fetchMealPlans,
   MealPlan,
   updateMealPlan,
+  updateMealTimeThunk,
 } from "@/redux/thunks/mealPlanThunks";
 import { Day, MealType } from "@/utils/types";
-import { useEffect, useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -44,6 +46,16 @@ const MealPlanScreen = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(
     todayIndex ? todayIndex - 1 : 6
   );
+  const [hoursInput, setHoursInput] = useState(""); // For HH
+  const [minutesInput, setMinutesInput] = useState(""); // For MM
+
+  const [mealTimeModalVisible, setMealTimeModalVisible] = useState(false);
+  const [mealTimeInput, setMealTimeInput] = useState(""); // HH:mm
+  const [mealToEditTime, setMealToEditTime] = useState<{
+    day: Day;
+    mealType: MealType;
+  } | null>(null);
+
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingMealType, setEditingMealType] = useState("");
@@ -66,6 +78,8 @@ const MealPlanScreen = () => {
       | { text: string; onPress: () => void }
       | undefined,
   });
+
+  const minutesRef = useRef<TextInput>(null);
 
   useEffect(() => {
     handleFetchMealPlans();
@@ -91,6 +105,16 @@ const MealPlanScreen = () => {
     setModalMode(mode);
     setEditingMealType(mealType || "");
     setModalVisible(true);
+  };
+
+  const openMealTimeModal = (
+    day: Day,
+    mealType: MealType,
+    currentTime?: string
+  ) => {
+    setMealToEditTime({ day, mealType });
+    setMealTimeInput(currentTime || "");
+    setMealTimeModalVisible(true);
   };
 
   const handleCardClick = (day: Day, mealType: MealType) => {
@@ -373,11 +397,40 @@ const MealPlanScreen = () => {
                                 <View style={styles.mealCardBody}>
                                   <View style={styles.mealCardHeader}>
                                     <View style={styles.mealTypeContainer}>
+                                      {/* Meal Type */}
                                       <Text style={styles.mealType}>
                                         {meal.mealType}
                                       </Text>
-                                      <View style={styles.mealTypeBadge} />
+
+                                      <TouchableOpacity
+                                        style={styles.editMealTimeButton}
+                                        onPress={() =>
+                                          openMealTimeModal(
+                                            weekDaysDisplay[
+                                              selectedDayIndex
+                                            ] as Day,
+                                            meal.mealType as MealType,
+                                            meal.mealTime
+                                          )
+                                        }
+                                      >
+                                        {/* Meal Time + Edit Button */}
+                                        <View style={styles.mealTimeRow}>
+                                          {meal.mealTime && (
+                                            <Text style={styles.mealTime}>
+                                              {meal.mealTime}
+                                            </Text>
+                                          )}
+
+                                          <MaterialIcons
+                                            name="edit"
+                                            size={14}
+                                            color={COLORS.primary}
+                                          />
+                                        </View>
+                                      </TouchableOpacity>
                                     </View>
+
                                     <View style={styles.mealHeaderRight}>
                                       {recipe?.cuisine && (
                                         <View style={styles.cuisineBadge}>
@@ -529,6 +582,177 @@ const MealPlanScreen = () => {
       </ScrollView>
 
       <Modal
+        visible={mealTimeModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setMealTimeModalVisible(false)}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setMealTimeModalVisible(false);
+            setHoursInput("");
+            setMinutesInput("");
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={styles.modalKeyboardView}
+            >
+              <TouchableWithoutFeedback>
+                <View style={styles.modalBox}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Edit Meal Time</Text>
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => setMealTimeModalVisible(false)}
+                    >
+                      <Text style={styles.closeButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.modalContent}>
+                    <View style={styles.inputRow}>
+                      <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Hours</Text>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="08"
+                          value={hoursInput}
+                          onChangeText={(text) => {
+                            const filtered = text
+                              .replace(/[^0-9]/g, "")
+                              .slice(0, 2);
+                            setHoursInput(filtered);
+
+                            // Automatically move focus to minutes if 2 digits entered
+                            if (filtered.length === 2) {
+                              minutesRef.current?.focus();
+                            }
+                          }}
+                          keyboardType="numeric"
+                          maxLength={2}
+                        />
+                      </View>
+
+                      <Text style={styles.colon}>:</Text>
+
+                      <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Minutes</Text>
+                        <TextInput
+                          ref={minutesRef}
+                          style={styles.input}
+                          placeholder="30"
+                          value={minutesInput}
+                          onChangeText={(text) => {
+                            const filtered = text
+                              .replace(/[^0-9]/g, "")
+                              .slice(0, 2);
+                            setMinutesInput(filtered);
+                          }}
+                          keyboardType="numeric"
+                          maxLength={2}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={styles.modalActions}>
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => {
+                          setMealTimeModalVisible(false);
+                          setHoursInput("");
+                          setMinutesInput("");
+                        }}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.saveButton, loading && { opacity: 0.7 }]}
+                        onPress={async () => {
+                          if (!mealToEditTime) return;
+
+                          // Validate hours and minutes
+                          const hours = parseInt(hoursInput);
+                          const minutes = parseInt(minutesInput);
+
+                          if (
+                            isNaN(hours) ||
+                            isNaN(minutes) ||
+                            hours < 0 ||
+                            hours > 23 ||
+                            minutes < 0 ||
+                            minutes > 59
+                          ) {
+                            showModal({
+                              title: "Invalid Time",
+                              message:
+                                "Please enter valid hours (0-23) and minutes (0-59).",
+                              type: "error",
+                              primaryButton: {
+                                text: "OK",
+                                onPress: () => setAlertModalVisible(false),
+                              },
+                            });
+                            return;
+                          }
+
+                          const formattedTime = `${hours
+                            .toString()
+                            .padStart(2, "0")}:${minutes
+                            .toString()
+                            .padStart(2, "0")}`;
+
+                          try {
+                            await dispatch(
+                              updateMealTimeThunk({
+                                day: mealToEditTime.day,
+                                mealType: mealToEditTime.mealType,
+                                newTime: formattedTime,
+                              })
+                            ).unwrap();
+
+                            setMealTimeModalVisible(false);
+                            setMealToEditTime(null);
+                            setHoursInput("");
+                            setMinutesInput("");
+                            await dispatch(fetchMealPlans()).unwrap();
+                          } catch (err: any) {
+                            console.error(err);
+                            showModal({
+                              title: "Error",
+                              message: err || "Failed to update meal time.",
+                              type: "error",
+                              primaryButton: {
+                                text: "OK",
+                                onPress: () => setAlertModalVisible(false),
+                              },
+                            });
+                          }
+                        }}
+                        disabled={loading}
+                        activeOpacity={0.8}
+                      >
+                        {loading ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={COLORS.background}
+                          />
+                        ) : (
+                          <Text style={styles.saveButtonText}>Save</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      <Modal
         visible={isModalVisible}
         animationType="slide"
         transparent
@@ -558,7 +782,7 @@ const MealPlanScreen = () => {
                     <View style={styles.inputContainer}>
                       <Text style={styles.inputLabel}>Recipe Title</Text>
                       <TextInput
-                        style={styles.input}
+                        style={styles.inputEditMeal}
                         value={editingRecipeTitle}
                         onChangeText={setEditingRecipeTitle}
                         placeholder="Enter recipe title"
@@ -569,7 +793,7 @@ const MealPlanScreen = () => {
                     <View style={styles.inputContainer}>
                       <Text style={styles.inputLabel}>Description</Text>
                       <TextInput
-                        style={[styles.input, styles.textArea]}
+                        style={[styles.inputEditMeal, styles.textArea]}
                         value={editingRecipeDescription}
                         onChangeText={setEditingRecipeDescription}
                         placeholder="Add recipe description..."
@@ -1054,8 +1278,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   mealTypeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "column",
+    // alignItems: "center",
+    // marginBottom: 6,
+    marginRight: 6,
   },
   mealType: {
     fontSize: 13,
@@ -1063,8 +1289,25 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    marginRight: 6,
   },
+  mealTimeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 1,
+  },
+  mealTime: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginRight: 5,
+  },
+  editMealTimeButton: {
+    // padding: 3,
+  },
+  editMealTimeText: {
+    fontSize: 14,
+    color: "#007BFF",
+  },
+
   mealTypeBadge: {
     width: 0,
     height: 6,
@@ -1331,6 +1574,19 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 20,
   },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  colon: {
+    fontSize: 20,
+    marginHorizontal: 6,
+    marginTop: 8,
+    color: COLORS.textPrimary,
+    fontWeight: "bold",
+  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -1340,12 +1596,22 @@ const styles = StyleSheet.create({
     color: "#2c3e50",
     marginBottom: 8,
   },
-  input: {
+  inputEditMeal: {
     borderWidth: 1,
     borderColor: "#e1e5e9",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    backgroundColor: "#f8f9fb",
+    color: "#2c3e50",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e1e5e9",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 18,
+    alignSelf: "center",
     backgroundColor: "#f8f9fb",
     color: "#2c3e50",
   },

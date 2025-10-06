@@ -16,6 +16,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+// import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import { generateMealPlan } from "../redux/thunks/mealPlanThunks";
 import { updateUserProfile } from "../redux/thunks/userThunks";
@@ -627,7 +628,7 @@ const PersonalDetailsScreen = () => {
               <View style={styles.questionContent}>
                 <Text style={styles.questionTitle}>Health Conditions</Text>
                 <Text style={styles.questionSubtitle}>
-                  Any medical conditions we should know about? (Optional)
+                  Any medical conditions we should know about?
                 </Text>
               </View>
               <View style={styles.arrowContainer}>

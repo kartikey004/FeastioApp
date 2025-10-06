@@ -92,23 +92,44 @@ export default function HomeScreen() {
     });
   };
 
-  const renderMealCard = (mealType: any, mealData: any) => (
-    <View key={mealType} style={styles.mealCard}>
-      <View style={styles.mealHeader}>
-        <View style={styles.mealInfo}>
-          <Text style={styles.mealType}>{mealType.toUpperCase()}</Text>
+  const renderMealCard = (mealType: any, mealData: any) => {
+    const now = new Date();
+    let mealPassed = false;
+
+    if (mealData.mealTime) {
+      // Assuming mealTime is in "HH:mm" 24-hour format
+      const [hour, minute] = mealData.mealTime.split(":").map(Number);
+      const mealTimeDate = new Date();
+      mealTimeDate.setHours(hour, minute, 0, 0);
+
+      mealPassed = now > mealTimeDate;
+    }
+
+    // Determine indicator color
+    let indicatorColor = "#FFC107"; // default: upcoming
+    if (mealPassed) indicatorColor = "#4CAF50"; // passed (notification sent)
+
+    return (
+      <View key={mealType} style={styles.mealCard}>
+        <View style={styles.mealHeader}>
+          <View style={styles.mealInfo}>
+            <Text style={styles.mealType}>{mealType.toUpperCase()}</Text>
+            {mealData.mealTime && (
+              <Text style={styles.mealTime}>{mealData.mealTime}</Text>
+            )}
+          </View>
+          <View
+            style={[
+              styles.statusIndicator,
+              { backgroundColor: indicatorColor },
+            ]}
+          />
         </View>
-        <View
-          style={[
-            styles.statusIndicator,
-            { backgroundColor: mealData.completed ? "#4CAF50" : "#FFC107" },
-          ]}
-        />
+        <Text style={styles.mealName}>{mealData.name}</Text>
+        <Text style={styles.mealCalories}>{mealData.calories} cal</Text>
       </View>
-      <Text style={styles.mealName}>{mealData.name}</Text>
-      <Text style={styles.mealCalories}>{mealData.calories} cal</Text>
-    </View>
-  );
+    );
+  };
 
   if (isInitialLoading || loading || !todayMealPlan) {
     return (
@@ -208,7 +229,6 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Meals List */}
           <View style={styles.mealsContainer}>
             {Object.entries(meals)
               .filter(([_, mealData]) => mealData !== null)
@@ -534,6 +554,7 @@ const styles = StyleSheet.create({
     width: scale(8),
     height: scale(8),
     borderRadius: scale(4),
+    marginBottom: verticalScale(10),
   },
   mealName: {
     fontSize: moderateScale(13),

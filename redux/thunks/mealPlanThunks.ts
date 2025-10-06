@@ -42,6 +42,12 @@ interface UpdateMealPlanArgs {
   };
 }
 
+interface UpdateMealTimeArgs {
+  day: Day;
+  mealType: MealType;
+  newTime: string; // 24-hour format
+}
+
 export const fetchMealPlans = createAsyncThunk<MealPlan[]>(
   "mealPlans/fetchMealPlans",
   async (_, { rejectWithValue }) => {
@@ -148,6 +154,34 @@ export const getTodayMealPlanThunk = createAsyncThunk<
 
     return rejectWithValue(
       error.response?.data?.message || "Failed to fetch today's meal plan"
+    );
+  }
+});
+
+export const updateMealTimeThunk = createAsyncThunk<
+  UpdateMealTimeArgs,
+  UpdateMealTimeArgs,
+  { rejectValue: string }
+>("mealPlans/updateMealTime", async (updates, { rejectWithValue }) => {
+  try {
+    const payload = {
+      day: updates.day,
+      mealType: updates.mealType,
+      newTime: updates.newTime,
+    };
+
+    const res = await api.patch("/mealPlans/updateMealTime", payload);
+
+    console.log("Meal time updated:", res.data);
+
+    return payload;
+  } catch (err: any) {
+    console.error(
+      "Error updating meal time:",
+      err.response?.data || err.message
+    );
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to update meal time."
     );
   }
 });

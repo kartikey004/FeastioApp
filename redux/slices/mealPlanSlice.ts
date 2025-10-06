@@ -5,6 +5,7 @@ import {
   getTodayMealPlanThunk,
   MealPlan,
   updateMealPlan,
+  updateMealTimeThunk,
 } from "../thunks/mealPlanThunks";
 
 interface MealPlanState {
@@ -126,6 +127,36 @@ const mealPlanSlice = createSlice({
     builder.addCase(getTodayMealPlanThunk.rejected, (state, action) => {
       state.loading = false;
       state.error = (action.payload as string) || "Something went wrong";
+    });
+    builder.addCase(updateMealTimeThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      updateMealTimeThunk.fulfilled,
+      (
+        state,
+        action: PayloadAction<{
+          day: string;
+          mealType: string;
+          newTime: string;
+        }>
+      ) => {
+        state.loading = false;
+        const todayPlan = state.todayMealPlan;
+        if (todayPlan) {
+          const { day, mealType, newTime } = action.payload;
+          const mealKey =
+            mealType.toLowerCase() as keyof typeof todayPlan.data.meals;
+          if (todayPlan.data.meals[mealKey]) {
+            todayPlan.data.meals[mealKey]!.scheduledTime = newTime;
+          }
+        }
+      }
+    );
+    builder.addCase(updateMealTimeThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
     });
   },
 });

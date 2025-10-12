@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Font from "expo-font";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
@@ -23,10 +24,21 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
-      router.replace("/loginScreen");
-    }, 3000);
+    const checkAuth = async () => {
+      try {
+        const userProfile = await SecureStore.getItemAsync("userProfile");
+        if (userProfile) {
+          router.replace("/homeScreen");
+        } else {
+          router.replace("/loginScreen");
+        }
+      } catch (err) {
+        console.error("Error checking auth:", err);
+        router.replace("/loginScreen");
+      }
+    };
 
+    const timer = setTimeout(checkAuth, 2000);
     return () => clearTimeout(timer);
   }, [router, scaleAnim, opacityAnim]);
 

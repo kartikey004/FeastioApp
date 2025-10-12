@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   forgotPassword,
-  googleSignIn,
   loginUser,
   logoutUser,
   registerUser,
+  rehydrateAuth,
   resendForgotOTP,
   resendOTP,
   resetPassword,
@@ -50,20 +50,22 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(googleSignIn.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(googleSignIn.fulfilled, (state, action) => {
+    builder.addCase(rehydrateAuth.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      rehydrateAuth.fulfilled,
+      (state, action: PayloadAction<User | null>) => {
         state.loading = false;
         state.user = action.payload;
         state.error = null;
-      })
-      .addCase(googleSignIn.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
+      }
+    );
+    builder.addCase(rehydrateAuth.rejected, (state) => {
+      state.loading = false;
+      state.user = null;
+    });
 
     builder
       .addCase(registerUser.pending, (state) => {
@@ -84,6 +86,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
         state.isOtpSent = false;
       });
+
     builder
       .addCase(verifyOTP.pending, (state) => {
         state.loading = true;
@@ -102,6 +105,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
+    // Resend OTP
     builder
       .addCase(resendOTP.pending, (state) => {
         state.loading = true;
@@ -119,6 +123,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
+    // Login user
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -134,6 +139,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
+    // Logout user
     builder
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
@@ -153,9 +159,10 @@ const authSlice = createSlice({
         state.isOtpSent = false;
         state.error = action.payload as string;
       });
+
+    // Forgot password
     builder
       .addCase(forgotPassword.pending, (state) => {
-        // state.loading = true;
         state.error = null;
         state.isOtpSent = false;
       })
@@ -171,6 +178,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
+    // Resend forgot OTP
     builder
       .addCase(resendForgotOTP.pending, (state) => {
         state.loading = true;
@@ -186,6 +194,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       });
 
+    // Reset password
     builder
       .addCase(resetPassword.pending, (state) => {
         state.loading = true;

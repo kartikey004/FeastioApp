@@ -1,5 +1,5 @@
 import { COLORS } from "@/utils/stylesheet";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,18 +15,46 @@ import {
 } from "react-native";
 import { verticalScale } from "react-native-size-matters";
 import { useDispatch, useSelector } from "react-redux";
-import { addUserMessage } from "../../redux/slices/aiChatSlice";
+import { resetPartialReply } from "../../redux/slices/aiChatSlice";
 import { AppDispatch, RootState } from "../../redux/store";
-import { sendMessageToAI } from "../../redux/thunks/aiChatThunks";
+import {
+  fetchChatHistory,
+  sendMessageToAI,
+} from "../../redux/thunks/aiChatThunks";
 
 export default function AIAssistantScreen() {
   const [input, setInput] = useState("");
   const dispatch = useDispatch<AppDispatch>();
-  const { messages, loading } = useSelector((state: RootState) => state.aiChat);
+  const flatListRef = useRef<FlatList>(null);
+
+  const { messages, partialReply, loading } = useSelector(
+    (state: RootState) => state.aiChat
+  );
+
+  useEffect(() => {
+    dispatch(fetchChatHistory());
+  }, [dispatch]);
+
+  const scrollToBottom = () => {
+    if (!flatListRef.current || !messages.length) return;
+
+    flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+  };
+
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
+  }, [messages.length, partialReply]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, partialReply]);
 
   const handleSend = () => {
     if (!input.trim()) return;
-    dispatch(addUserMessage(input));
+    dispatch({ type: "aiChat/addUserMessage", payload: input });
+    dispatch(resetPartialReply());
     dispatch(sendMessageToAI({ message: input }));
     setInput("");
   };
@@ -43,6 +71,11 @@ export default function AIAssistantScreen() {
     </SafeAreaView>
   );
 
+  const displayedMessages = [...messages];
+  if (partialReply) {
+    displayedMessages.push({ role: "assistant", content: partialReply });
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -56,7 +89,7 @@ export default function AIAssistantScreen() {
               <Image
                 source={require("../../assets/images/assistantIconFilled.png")}
                 style={styles.sageEmoji}
-              ></Image>
+              />
               <Text style={styles.title}>Sage AI</Text>
             </View>
             <Text style={styles.subtitle}>Nutrition Assistant</Text>
@@ -64,11 +97,13 @@ export default function AIAssistantScreen() {
         </View>
 
         <View style={styles.messagesContainer}>
-          {messages.length === 0 ? (
+          {displayedMessages.length === 0 ? (
             <EmptyState />
           ) : (
             <FlatList
-              data={messages}
+              ref={flatListRef}
+              scrollEventThrottle={16}
+              data={displayedMessages}
               keyExtractor={(_, index) => index.toString()}
               renderItem={({ item }) => (
                 <View style={styles.messageContainer}>
@@ -80,7 +115,7 @@ export default function AIAssistantScreen() {
                         : styles.aiBubble,
                     ]}
                   >
-                    {item.role === "ai" && (
+                    {item.role === "assistant" && (
                       <Text style={styles.aiLabel}>Sage</Text>
                     )}
                     <Text
@@ -191,19 +226,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     alignSelf: "center",
+    marginLeft: 8,
     fontWeight: "500",
   },
   messagesContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingHorizontal: 4,
   },
   messagesContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 12,
     flexDirection: "column-reverse",
   },
   messageContainer: {
-    marginVertical: 6,
+    marginVertical: 4,
   },
   messageBubble: {
     borderRadius: 20,
@@ -214,7 +251,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    // elevation: 1,
   },
   userBubble: {
     alignSelf: "flex-end",
@@ -260,7 +296,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignSelf: "flex-start",
     maxWidth: "70%",
-    // elevation: 10,
   },
   typingText: {
     color: COLORS.sage,
@@ -328,7 +363,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    // elevation: 1,
   },
   suggestionText: {
     fontSize: 15,
@@ -339,8 +373,8 @@ const styles = StyleSheet.create({
   inputSection: {
     backgroundColor: COLORS.background,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    // borderTopWidth: 1,
+    paddingBottom: 12,
+    paddingTop: 4,
     borderTopColor: COLORS.greyLight,
   },
   inputContainer: {

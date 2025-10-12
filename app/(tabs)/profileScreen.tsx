@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   RefreshControl,
   SafeAreaView,
@@ -197,6 +198,11 @@ const ProfileScreen: React.FC = () => {
   if (loading && !profileData) {
     return (
       <View style={styles.loadingContainer}>
+        <ActivityIndicator
+          size="small"
+          color={COLORS.primaryLight}
+          style={styles.loadingSpinner}
+        />
         <Text style={styles.loadingText}>
           Hang tight!{"\n"}We're setting up your profile...
         </Text>
@@ -386,6 +392,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5f5f5",
   },
+  loadingSpinner: {
+    marginBottom: 20,
+  },
   loadingText: {
     fontSize: 16,
     textAlign: "center",
@@ -419,7 +428,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.08,
     shadowRadius: 12,
-    // elevation: 3,
     borderWidth: 1,
     borderColor: COLORS.greyLight,
   },
@@ -453,7 +461,6 @@ const styles = StyleSheet.create({
   profileImageText: {
     fontSize: 32,
     fontWeight: "bold",
-    // fontStyle: "italic",
     color: COLORS.white,
   },
   profileInfo: {
@@ -498,7 +505,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    // backgroundColor: COLORS.accent,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -521,7 +527,6 @@ const styles = StyleSheet.create({
   },
   cardAccent: {
     height: 4,
-    // backgroundColor: COLORS.primary,
     borderRadius: 2,
     marginTop: 16,
     marginHorizontal: -4,
@@ -546,7 +551,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    // elevation: 1,
   },
   basicInfoContent: {
     marginTop: 12,
@@ -621,7 +625,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    // elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",

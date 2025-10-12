@@ -20,6 +20,7 @@ import {
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { useDispatch, useSelector } from "react-redux";
 import { getTodayTips } from "../../utils/dashboardUtils";
+import NotificationService from "../../utils/notificationServices";
 import { tipCards } from "../../utils/tipCards";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -69,6 +70,23 @@ export default function HomeScreen() {
     }
   }, [loading, todayMealPlan]);
 
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const granted = await NotificationService.requestPermissions();
+      if (granted && todayMealPlan?.data?.meals) {
+        const mealArray = Object.entries(todayMealPlan.data.meals)
+          .filter(([_, mealData]) => mealData?.scheduledTime)
+          .map(([mealType, mealData]) => ({
+            mealType,
+            mealTime: mealData!.scheduledTime!,
+          }));
+
+        await NotificationService.scheduleAllMeals(mealArray);
+      }
+    };
+    setupNotifications();
+  }, [todayMealPlan]);
+
   const handleMomentumScrollEnd = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / (screenWidth - 40));
@@ -97,17 +115,14 @@ export default function HomeScreen() {
     let mealPassed = false;
 
     if (mealData.mealTime) {
-      // Assuming mealTime is in "HH:mm" 24-hour format
       const [hour, minute] = mealData.mealTime.split(":").map(Number);
       const mealTimeDate = new Date();
       mealTimeDate.setHours(hour, minute, 0, 0);
-
       mealPassed = now > mealTimeDate;
     }
 
-    // Determine indicator color
-    let indicatorColor = "#FFC107"; // default: upcoming
-    if (mealPassed) indicatorColor = "#4CAF50"; // passed (notification sent)
+    let indicatorColor = "#FFC107";
+    if (mealPassed) indicatorColor = "#4CAF50";
 
     return (
       <View key={mealType} style={styles.mealCard}>
@@ -143,9 +158,11 @@ export default function HomeScreen() {
       </SafeAreaView>
     );
   }
+
   if (error) return <Text>Error: {error}</Text>;
 
   const { meals, totalCalories, dailyNutritionalSummary } = todayMealPlan.data;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView

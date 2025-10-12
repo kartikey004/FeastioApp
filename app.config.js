@@ -46,5 +46,11 @@ export default {
     experiments: {
       typedRoutes: true,
     },
+
+    notification: {
+      icon: "./assets/images/icon.png",
+      color: "#FF4500",
+      iosDisplayInForeground: true,
+    },
   },
 };

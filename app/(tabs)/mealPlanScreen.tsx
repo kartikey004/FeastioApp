@@ -44,7 +44,7 @@ const MealPlanScreen = () => {
   const todayIndex = new Date().getDay();
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(
-    todayIndex ? todayIndex - 1 : 6
+    todayIndex ? todayIndex - 1 : 6,
   );
   const [hoursInput, setHoursInput] = useState(""); // For HH
   const [minutesInput, setMinutesInput] = useState(""); // For MM
@@ -63,7 +63,7 @@ const MealPlanScreen = () => {
   const [editingRecipeDescription, setEditingRecipeDescription] = useState("");
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(
-    null
+    null,
   );
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setAlertModalVisible] = useState(false);
@@ -95,7 +95,7 @@ const MealPlanScreen = () => {
   };
 
   const showModal = (
-    config: Partial<typeof modalConfig> & { message: string }
+    config: Partial<typeof modalConfig> & { message: string },
   ) => {
     setModalConfig({ ...modalConfig, ...config });
     setAlertModalVisible(true);
@@ -110,7 +110,7 @@ const MealPlanScreen = () => {
   const openMealTimeModal = (
     day: Day,
     mealType: MealType,
-    currentTime?: string
+    currentTime?: string,
   ) => {
     setMealToEditTime({ day, mealType });
     setMealTimeInput(currentTime || "");
@@ -163,17 +163,14 @@ const MealPlanScreen = () => {
               description: editingRecipeDescription,
             },
           },
-        })
+        }),
       ).unwrap();
 
       setModalVisible(false);
       setEditingRecipeTitle("");
       setEditingRecipeDescription("");
-
-      await dispatch(fetchMealPlans()).unwrap();
     } catch (err: any) {
       console.error("Failed to update meal:", err);
-      // Alert.alert("Error", err || "Failed to update meal plan");
       showModal({
         title: "Error",
         message: err || "An unexpected error occurred. Please try again.",
@@ -198,7 +195,7 @@ const MealPlanScreen = () => {
           console.log("Days in plan:", Object.keys(plans[0].plan || {}));
           console.log(
             "Monday meals:",
-            JSON.stringify(plans[0].plan.Monday, null, 2)
+            JSON.stringify(plans[0].plan.Monday, null, 2),
           );
         }
         return plans;
@@ -384,7 +381,7 @@ const MealPlanScreen = () => {
                               onPress={() =>
                                 handleCardClick(
                                   weekDaysDisplay[selectedDayIndex] as Day,
-                                  meal.mealType as MealType
+                                  meal.mealType as MealType,
                                 )
                               }
                               activeOpacity={0.8}
@@ -410,7 +407,7 @@ const MealPlanScreen = () => {
                                               selectedDayIndex
                                             ] as Day,
                                             meal.mealType as MealType,
-                                            meal.mealTime
+                                            meal.mealTime,
                                           )
                                         }
                                       >
@@ -710,7 +707,7 @@ const MealPlanScreen = () => {
                                 day: mealToEditTime.day,
                                 mealType: mealToEditTime.mealType,
                                 newTime: formattedTime,
-                              })
+                              }),
                             ).unwrap();
 
                             setMealTimeModalVisible(false);

@@ -63,7 +63,7 @@ export default function ResetPasswordScreen() {
   }, []);
 
   const showModal = (
-    config: Partial<typeof modalConfig> & { message: string }
+    config: Partial<typeof modalConfig> & { message: string },
   ) => {
     setModalConfig({ ...modalConfig, ...config });
     setModalVisible(true);
@@ -162,7 +162,7 @@ export default function ResetPasswordScreen() {
           email: email as string,
           otp: otp.join(""),
           newPassword: password,
-        })
+        }),
       );
 
       if (resetPassword.fulfilled.match(resultAction)) {

@@ -25,11 +25,17 @@ import { tipCards } from "../../utils/tipCards";
 
 const { width: screenWidth } = Dimensions.get("window");
 
+if (!__DEV__) {
+  console.log = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+}
+
 export default function HomeScreen() {
   const dispatch = useDispatch<AppDispatch>();
 
   const { todayMealPlan, loading, error } = useSelector(
-    (state: RootState) => state.mealPlan
+    (state: RootState) => state.mealPlan,
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -75,10 +81,10 @@ export default function HomeScreen() {
       const granted = await NotificationService.requestPermissions();
       if (granted && todayMealPlan?.data?.meals) {
         const mealArray = Object.entries(todayMealPlan.data.meals)
-          .filter(([_, mealData]) => mealData?.scheduledTime)
+          .filter(([_, mealData]) => mealData?.mealTime)
           .map(([mealType, mealData]) => ({
             mealType,
-            mealTime: mealData!.scheduledTime!,
+            mealTime: mealData!.mealTime!,
           }));
 
         await NotificationService.scheduleAllMeals(mealArray);
@@ -196,6 +202,15 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={handleMomentumScrollEnd}
             scrollEventThrottle={16}
+            onScrollToIndexFailed={(info) => {
+              const wait = new Promise((resolve) => setTimeout(resolve, 500));
+              wait.then(() => {
+                scrollRef.current?.scrollToIndex({
+                  index: info.index,
+                  animated: true,
+                });
+              });
+            }}
             renderItem={({ item }) => (
               <View style={[styles.tipCard, { width: screenWidth - 40 }]}>
                 <View style={styles.tipImageContainer}>
@@ -250,7 +265,7 @@ export default function HomeScreen() {
             {Object.entries(meals)
               .filter(([_, mealData]) => mealData !== null)
               .map(([mealType, mealData]) =>
-                renderMealCard(mealType, mealData)
+                renderMealCard(mealType, mealData),
               )}
           </View>
 

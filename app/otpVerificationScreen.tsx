@@ -89,7 +89,7 @@ export default function OtpVerificationScreen() {
   }, [error]);
 
   const showModal = (
-    config: Partial<typeof modalConfig> & { message: string }
+    config: Partial<typeof modalConfig> & { message: string },
   ) => {
     setModalConfig({ ...modalConfig, ...config });
     setModalVisible(true);
@@ -141,7 +141,7 @@ export default function OtpVerificationScreen() {
       verifyOTP({
         tempToken,
         otp: otpString,
-      })
+      }),
     )
       .unwrap()
       .then((user) => {

@@ -3,8 +3,8 @@ import * as SecureStore from "expo-secure-store";
 import { Alert } from "react-native";
 
 const api = axios.create({
-  // baseURL: "http://192.168.29.250:5000/api",
-  baseURL: "https://feastio-backend.vercel.app/api",
+  // baseURL: "http://10.57.0.101:5000/api",
+  baseURL: "https://feastiobackend.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -33,7 +33,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 api.interceptors.response.use(
@@ -63,7 +63,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 const refreshAccessToken = async () => {
@@ -73,10 +73,10 @@ const refreshAccessToken = async () => {
     if (!refreshToken) return false;
 
     const response = await axios.post(
-      // "http://192.168.29.250:5000/api/auth/refresh",
-      "https://feastio-backend.vercel.app/api/auth/refresh",
+      // "http://10.57.0.101:5000/api/auth/refresh",
+      "https://feastiobackend.onrender.com/api/auth/refresh",
       { refreshToken },
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } },
     );
     if (response.data.accessToken && response.data.refreshToken) {
       const { accessToken, refreshToken } = response.data;

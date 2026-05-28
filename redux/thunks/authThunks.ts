@@ -33,7 +33,7 @@ export const rehydrateAuth = createAsyncThunk<BackendUser | null>(
       console.log("Error rehydrating auth:", error);
       return null;
     }
-  }
+  },
 );
 
 export const registerUser = createAsyncThunk<
@@ -175,14 +175,14 @@ export const resendForgotOTP = createAsyncThunk<
 
 export const resetPassword = createAsyncThunk<
   BackendUser,
-  { tempToken: string; otp: string; newPassword: string },
+  { email: string; otp: string; newPassword: string },
   { rejectValue: string }
 >(
   "auth/resetPassword",
-  async ({ tempToken, otp, newPassword }, { rejectWithValue }) => {
+  async ({ email, otp, newPassword }, { rejectWithValue }) => {
     try {
       const response = await api.post("/auth/reset-password", {
-        tempToken,
+        email,
         otp,
         newPassword,
       });
@@ -200,5 +200,5 @@ export const resetPassword = createAsyncThunk<
         "Reset password failed";
       return rejectWithValue(errMsg);
     }
-  }
+  },
 );

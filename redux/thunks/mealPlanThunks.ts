@@ -12,8 +12,16 @@ export interface NutritionalSummary {
 
 export interface MealEntry {
   mealType: string;
-  title: string;
-  description: string;
+  mealTime?: string;
+  recipeSnapshot?: {
+    title: string;
+    description: string;
+    imageUrl?: string;
+    ingredients?: string[];
+    cookTime?: number | string;
+    cuisine?: string;
+    nutritionalInfo?: NutritionalSummary;
+  };
 }
 
 export interface MealPlan {
@@ -62,15 +70,15 @@ export const fetchMealPlans = createAsyncThunk<MealPlan[]>(
     } catch (err: any) {
       console.error(
         "Error fetching meal plans:",
-        err.response?.data || err.message
+        err.response?.data || err.message,
       );
       return rejectWithValue(err.response?.data?.message || "Failed to fetch");
     }
-  }
+  },
 );
 
 export const updateMealPlan = createAsyncThunk<
-  void,
+  { day: string; updatedMeal: any },
   UpdateMealPlanArgs,
   { rejectValue: string }
 >("mealPlans/updateMealPlan", async (updates, { rejectWithValue }) => {
@@ -91,13 +99,18 @@ export const updateMealPlan = createAsyncThunk<
     const res = await api.patch("/mealplans/update", payload);
 
     console.log("Meal plan updated:", res.data);
+
+    return {
+      day: updates.day,
+      updatedMeal: res.data.updatedMeal,
+    };
   } catch (err: any) {
     console.error(
       "Error updating meal plan:",
-      err.response?.data || err.message
+      err.response?.data || err.message,
     );
     return rejectWithValue(
-      err.response?.data?.message || "Failed to update meal plan."
+      err.response?.data?.message || "Failed to update meal plan.",
     );
   }
 });
@@ -134,7 +147,7 @@ export const generateMealPlan = createAsyncThunk<
   } catch (error: any) {
     console.error(
       "Error generating/saving meal plan:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     return rejectWithValue(error.response?.data?.error || error.message);
   }
@@ -153,7 +166,7 @@ export const getTodayMealPlanThunk = createAsyncThunk<
     console.error("Error fetching today's meal plan:", error);
 
     return rejectWithValue(
-      error.response?.data?.message || "Failed to fetch today's meal plan"
+      error.response?.data?.message || "Failed to fetch today's meal plan",
     );
   }
 });
@@ -178,10 +191,10 @@ export const updateMealTimeThunk = createAsyncThunk<
   } catch (err: any) {
     console.error(
       "Error updating meal time:",
-      err.response?.data || err.message
+      err.response?.data || err.message,
     );
     return rejectWithValue(
-      err.response?.data?.message || "Failed to update meal time."
+      err.response?.data?.message || "Failed to update meal time.",
     );
   }
 });
